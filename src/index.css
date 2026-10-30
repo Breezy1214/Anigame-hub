@@ -37,25 +37,25 @@ body {
   gap: 8px;
 }
 
-.auth-form :is(input, button) {
+:is(.auth-form, .search-form) :is(input, button) {
   font: inherit;
   padding: 10px 12px;
   border-radius: 6px;
 }
 
-.auth-form input {
+:is(.auth-form, .search-form) input {
   border: 1px solid var(--border);
   margin-bottom: 8px;
 }
 
-.auth-form button {
+:is(.auth-form, .search-form) button {
   border: none;
   background: var(--accent);
   color: #fff;
   cursor: pointer;
 }
 
-.auth-form button:disabled {
+:is(.auth-form, .search-form) button:disabled {
   opacity: 0.6;
   cursor: default;
 }
@@ -103,4 +103,55 @@ a {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.page {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 32px 16px;
+}
+
+.search-form {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+.search-form input {
+  flex: 1;
+  min-width: 0;
+  margin-bottom: 0;
+}
+
+.search-form button {
+  padding: 10px 16px;
+}
+
+.media-grid {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 16px;
+}
+
+.media-card img,
+.media-card-placeholder {
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  object-fit: cover;
+  border-radius: 6px;
+  background: var(--border);
+}
+
+.media-card h3 {
+  font-size: 0.95rem;
+  margin: 8px 0 2px;
+}
+
+.media-card p {
+  margin: 0;
+  font-size: 0.85rem;
+  opacity: 0.75;
 }
