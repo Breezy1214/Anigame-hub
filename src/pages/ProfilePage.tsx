@@ -3,10 +3,9 @@ import { Link } from 'react-router-dom'
 import { useUser } from '../auth/AuthContext'
 import FormError from '../components/FormError'
 import ProfileForm from '../components/ProfileForm'
-import { UserMediaByStatus, UserMediaGroup } from '../components/UserMediaList'
+import { UserMediaByStatus, UserMediaFavorites, UserMediaLoader } from '../components/UserMediaList'
 import { useAsync } from '../hooks/useAsync'
 import { getProfile, type Profile } from '../lib/profiles'
-import { listUserMedia } from '../lib/userMedia'
 
 function ProfileSection({ initial }: { initial: Profile | null }) {
   const [profile, setProfile] = useState(initial)
@@ -32,7 +31,6 @@ function ProfileSection({ initial }: { initial: Profile | null }) {
 export default function ProfilePage() {
   const userId = useUser().id
   const profile = useAsync(`profile:${userId}`, (signal) => getProfile(userId, signal))
-  const list = useAsync(`list:${userId}`, (signal) => listUserMedia(userId, signal))
 
   return (
     <main className="page">
@@ -42,18 +40,21 @@ export default function ProfilePage() {
 
       <section aria-labelledby="my-list-heading">
         <h2 id="my-list-heading">My list</h2>
-        {list.status === 'error' && <FormError message="Couldn’t load your list. Please try again later." />}
-        {list.status === 'success' &&
-          (list.data.length === 0 ? (
+        <UserMediaLoader
+          userId={userId}
+          empty={
             <p>
               Nothing saved yet. <Link to="/search">Find something to watch or play.</Link>
             </p>
-          ) : (
+          }
+        >
+          {(entries) => (
             <>
-              <UserMediaGroup title="Favorites" entries={list.data.filter((entry) => entry.favorite)} />
-              <UserMediaByStatus entries={list.data} />
+              <UserMediaFavorites entries={entries} />
+              <UserMediaByStatus entries={entries} />
             </>
-          ))}
+          )}
+        </UserMediaLoader>
       </section>
     </main>
   )
