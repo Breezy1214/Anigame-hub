@@ -4,6 +4,7 @@ import { useUser } from '../auth/AuthContext'
 import FormError from '../components/FormError'
 import ProfileForm from '../components/ProfileForm'
 import ProfileHeading from '../components/ProfileHeading'
+import ShareProfileLink from '../components/ShareProfileLink'
 import { UserMediaByStatus, UserMediaFavorites, UserMediaLoader } from '../components/UserMediaList'
 import { useAsync } from '../hooks/useAsync'
 import { publicProfilePath } from '../lib/paths'
@@ -16,9 +17,12 @@ function ProfileSection({ initial }: { initial: Profile | null }) {
       {profile ? (
         <ProfileHeading profile={profile}>
           {profile.is_public && (
-            <p>
-              <Link to={publicProfilePath(profile.username)}>View public profile</Link>
-            </p>
+            <>
+              <p>
+                <Link to={publicProfilePath(profile.username)}>View public profile</Link>
+              </p>
+              <ShareProfileLink username={profile.username} />
+            </>
           )}
         </ProfileHeading>
       ) : (
