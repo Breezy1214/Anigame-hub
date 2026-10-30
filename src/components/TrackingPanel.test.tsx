@@ -22,7 +22,7 @@ const media: AnimeDetails = {
   episodeCount: 26,
 }
 
-const entry = { id: 'row-1', media_type: 'anime', status: 'planned', progress: 0, rating: null } as UserMedia
+const entry = { id: 'row-1', media_type: 'anime', status: 'planned', progress: 0, rating: null, favorite: false } as UserMedia
 
 function renderPanel(saved: SavedEntry, details: MediaDetails = media) {
   renderWithAuth(null, '/media/anime/1', [
@@ -150,5 +150,22 @@ describe('TrackingPanel', () => {
     await userEvent.selectOptions(screen.getByLabelText('Rating'), 'Not rated')
     expect(updateUserMedia).toHaveBeenLastCalledWith('row-1', { rating: null })
     await waitFor(() => expect(screen.getByLabelText('Rating')).toHaveValue(''))
+  })
+
+  it('marks and unmarks a favorite', async () => {
+    updateUserMedia.mockResolvedValueOnce({ ...entry, favorite: true }).mockResolvedValueOnce({ ...entry, favorite: false })
+    renderPanel({ status: 'success', data: entry })
+
+    const favorite = screen.getByRole('button', { name: 'Favorite', pressed: false })
+
+    await userEvent.click(favorite)
+    expect(updateUserMedia).toHaveBeenLastCalledWith('row-1', { favorite: true })
+    await waitFor(() => expect(favorite).toBeEnabled())
+    expect(favorite).toHaveAttribute('aria-pressed', 'true')
+
+    await userEvent.click(favorite)
+    expect(updateUserMedia).toHaveBeenLastCalledWith('row-1', { favorite: false })
+    await waitFor(() => expect(favorite).toBeEnabled())
+    expect(favorite).toHaveAttribute('aria-pressed', 'false')
   })
 })
