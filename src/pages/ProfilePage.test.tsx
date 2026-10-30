@@ -96,5 +96,6 @@ describe('ProfilePage', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Save profile' }))
     expect(saveProfile).toHaveBeenCalledWith(expect.objectContaining({ is_public: true }))
     expect(await screen.findByRole('link', { name: 'View public profile' })).toHaveAttribute('href', '/u/spike')
+    expect(screen.getByLabelText('Share your profile')).toHaveValue(`${window.location.origin}/u/spike`)
   })
 })
