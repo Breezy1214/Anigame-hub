@@ -1,4 +1,4 @@
-import { screen, waitFor } from '@testing-library/react'
+import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { Route } from 'react-router-dom'
 import { describe, expect, it, vi } from 'vitest'
@@ -22,7 +22,7 @@ const media: AnimeDetails = {
   episodeCount: 26,
 }
 
-const entry = { id: 'row-1', media_type: 'anime', status: 'planned', progress: 0 } as UserMedia
+const entry = { id: 'row-1', media_type: 'anime', status: 'planned', progress: 0, rating: null } as UserMedia
 
 function renderPanel(saved: SavedEntry, details: MediaDetails = media) {
   renderWithAuth(null, '/media/anime/1', [
@@ -49,7 +49,7 @@ describe('TrackingPanel', () => {
 
   it('labels statuses for the media type', () => {
     renderPanel({ status: 'success', data: entry })
-    const options = screen.getAllByRole('option').map((option) => option.textContent)
+    const options = within(screen.getByLabelText('Status')).getAllByRole('option').map((option) => option.textContent)
     expect(options).toEqual(['Watched', 'In Progress', 'Plan to Watch', 'Dropped'])
     expect(screen.queryByRole('button', { name: 'Save to my list' })).not.toBeInTheDocument()
   })
@@ -134,5 +134,21 @@ describe('TrackingPanel', () => {
       { ...media, type: 'game', platforms: [] } as MediaDetails,
     )
     expect(screen.getByLabelText('Completion (%)')).toHaveAttribute('max', '100')
+  })
+
+  it('rates a title and clears the rating', async () => {
+    updateUserMedia.mockResolvedValueOnce({ ...entry, rating: 8 }).mockResolvedValueOnce({ ...entry, rating: null })
+    renderPanel({ status: 'success', data: entry })
+
+    const rating = screen.getByLabelText('Rating')
+    expect(rating).toHaveValue('')
+    await userEvent.selectOptions(rating, '8')
+    expect(updateUserMedia).toHaveBeenLastCalledWith('row-1', { rating: 8 })
+    await waitFor(() => expect(screen.getByLabelText('Rating')).toBeEnabled())
+    expect(screen.getByLabelText('Rating')).toHaveValue('8')
+
+    await userEvent.selectOptions(screen.getByLabelText('Rating'), 'Not rated')
+    expect(updateUserMedia).toHaveBeenLastCalledWith('row-1', { rating: null })
+    await waitFor(() => expect(screen.getByLabelText('Rating')).toHaveValue(''))
   })
 })
