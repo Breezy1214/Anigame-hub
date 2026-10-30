@@ -114,6 +114,15 @@ function EntryControls({ entry, limit, onChange }: EntryControlsProps) {
 
   return (
     <div className="entry-controls">
+      <button
+        type="button"
+        className="favorite-button"
+        aria-pressed={shown.favorite}
+        disabled={pending}
+        onClick={() => update({ favorite: !shown.favorite })}
+      >
+        <span aria-hidden="true">{shown.favorite ? '★' : '☆'}</span> Favorite
+      </button>
       <label htmlFor="tracking-status">Status</label>
       <select
         id="tracking-status"
