@@ -32,3 +32,9 @@ export function progressLimit(media: MediaDetails) {
 export function clampProgress(input: string, limit: number | null) {
   return Math.min(Math.max(0, Math.floor(Number(input)) || 0), limit ?? Infinity)
 }
+
+/** Ratings are whole numbers from 1 to MAX_RATING (matching the database check); null means not rated. */
+export const MAX_RATING = 10
+
+/** Highest first, as offered in the rating picker. */
+export const RATINGS = Array.from({ length: MAX_RATING }, (_, i) => MAX_RATING - i)
