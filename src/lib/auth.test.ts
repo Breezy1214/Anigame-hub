@@ -1,9 +1,12 @@
 import { AuthApiError, AuthRetryableFetchError } from '@supabase/supabase-js'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { signUp } from './auth'
+import { signIn, signUp } from './auth'
 
-const { supabaseSignUp } = vi.hoisted(() => ({ supabaseSignUp: vi.fn() }))
-vi.mock('./supabase', () => ({ supabase: { auth: { signUp: supabaseSignUp } } }))
+const { supabaseSignUp, signInWithPassword } = vi.hoisted(() => ({
+  supabaseSignUp: vi.fn(),
+  signInWithPassword: vi.fn(),
+}))
+vi.mock('./supabase', () => ({ supabase: { auth: { signUp: supabaseSignUp, signInWithPassword } } }))
 
 const user = { identities: [{}] }
 
@@ -45,5 +48,34 @@ describe('signUp', () => {
       error: new AuthApiError('Signups not allowed', 422, 'signup_disabled'),
     })
     expect(await signUp('a@b.co', 'password1')).toEqual({ status: 'error', message: 'Signups not allowed' })
+  })
+})
+
+describe('signIn', () => {
+  beforeEach(() => signInWithPassword.mockReset())
+
+  it('signs in with valid credentials', async () => {
+    signInWithPassword.mockResolvedValue({ data: { session: {} }, error: null })
+    expect(await signIn('a@b.co', 'password1')).toEqual({ status: 'signed-in' })
+    expect(signInWithPassword).toHaveBeenCalledWith({ email: 'a@b.co', password: 'password1' })
+  })
+
+  it('maps invalid credentials to a friendly message', async () => {
+    signInWithPassword.mockResolvedValue({
+      data: { session: null },
+      error: new AuthApiError('Invalid login credentials', 400, 'invalid_credentials'),
+    })
+    expect(await signIn('a@b.co', 'wrong')).toEqual({ status: 'error', message: 'Incorrect email or password.' })
+  })
+
+  it('asks unconfirmed users to confirm their email', async () => {
+    signInWithPassword.mockResolvedValue({
+      data: { session: null },
+      error: new AuthApiError('Email not confirmed', 400, 'email_not_confirmed'),
+    })
+    expect(await signIn('a@b.co', 'password1')).toEqual({
+      status: 'error',
+      message: 'Confirm your email address before logging in.',
+    })
   })
 })
