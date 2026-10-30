@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 import { mockQuery } from '../test/mockQuery'
-import { findUserMedia, saveMedia, updateUserMedia } from './userMedia'
+import { deleteUserMedia, findUserMedia, saveMedia, updateUserMedia } from './userMedia'
 
 const { from } = vi.hoisted(() => ({ from: vi.fn() }))
 vi.mock('./supabase', () => ({ supabase: { from } }))
@@ -66,5 +66,22 @@ describe('updateUserMedia', () => {
       ['update', [{ status: 'completed' }]],
       ['eq', ['id', 'row-1']],
     ])
+  })
+})
+
+describe('deleteUserMedia', () => {
+  it('deletes one row by id', async () => {
+    const query = mockQuery({})
+    from.mockReturnValue(query.builder)
+    await deleteUserMedia('row-1')
+    expect(query.calls).toEqual([
+      ['delete', []],
+      ['eq', ['id', 'row-1']],
+    ])
+  })
+
+  it('throws database errors', async () => {
+    from.mockReturnValue(mockQuery({ error: { message: 'denied' } }).builder)
+    await expect(deleteUserMedia('row-1')).rejects.toEqual({ message: 'denied' })
   })
 })
