@@ -2,6 +2,7 @@ import { BrowserRouter, Link, Route, Routes } from 'react-router-dom'
 import AuthProvider from './auth/AuthProvider'
 import RequireAuth from './auth/RequireAuth'
 import Layout from './components/Layout'
+import DashboardPage from './pages/DashboardPage'
 import LoginPage from './pages/LoginPage'
 import MediaDetailsPage from './pages/MediaDetailsPage'
 import ProfilePage from './pages/ProfilePage'
@@ -30,6 +31,7 @@ export default function App() {
             <Route path="/search" element={<SearchPage />} />
             <Route path="/media/:type/:id" element={<MediaDetailsPage />} />
             <Route element={<RequireAuth />}>
+              <Route path="/dashboard" element={<DashboardPage />} />
               <Route path="/profile" element={<ProfilePage />} />
             </Route>
           </Route>

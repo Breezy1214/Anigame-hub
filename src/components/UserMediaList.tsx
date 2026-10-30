@@ -1,8 +1,11 @@
+import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
+import { useAsync } from '../hooks/useAsync'
 import { MEDIA_TYPE_LABELS, mediaPath } from '../lib/media'
 import { formatProgress, formatRating, STATUS_GROUP_LABELS, TRACKING_STATUSES } from '../lib/tracking'
-import type { UserMedia } from '../lib/userMedia'
+import { listUserMedia, type UserMedia } from '../lib/userMedia'
 import Cover from './Cover'
+import FormError from './FormError'
 
 function UserMediaItem({ entry }: { entry: UserMedia }) {
   const details = [
@@ -55,4 +58,24 @@ export function UserMediaByStatus({ entries }: { entries: UserMedia[] }) {
       entries={entries.filter((entry) => entry.status === status)}
     />
   ))
+}
+
+export function UserMediaFavorites({ entries }: { entries: UserMedia[] }) {
+  return <UserMediaGroup title="Favorites" entries={entries.filter((entry) => entry.favorite)} />
+}
+
+type UserMediaLoaderProps = {
+  userId: string
+  /** Shown when the list loads but has nothing in it. */
+  empty: ReactNode
+  children: (entries: UserMedia[]) => ReactNode
+}
+
+/** Loads a user's list and handles the loading, error and empty states for pages that show it. */
+export function UserMediaLoader({ userId, empty, children }: UserMediaLoaderProps) {
+  const list = useAsync(`list:${userId}`, (signal) => listUserMedia(userId, signal))
+
+  if (list.status === 'error') return <FormError message="Couldn’t load this list. Please try again later." />
+  if (list.status !== 'success') return <p role="status">Loading…</p>
+  return list.data.length === 0 ? empty : children(list.data)
 }

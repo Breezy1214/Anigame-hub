@@ -24,6 +24,7 @@ export default function Layout() {
           {!loading &&
             (user ? (
               <>
+                <Link to="/dashboard">Dashboard</Link>
                 <Link to="/profile" className="nav-user">
                   {user.email}
                 </Link>
