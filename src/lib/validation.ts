@@ -16,3 +16,11 @@ export function validateRegistration(email: string, password: string, confirmPas
   }
   return null
 }
+
+const USERNAME_PATTERN = /^[a-z0-9_]{3,20}$/
+
+export function validateUsername(username: string) {
+  return USERNAME_PATTERN.test(username)
+    ? null
+    : 'Usernames are 3–20 characters: lowercase letters, numbers and underscores.'
+}

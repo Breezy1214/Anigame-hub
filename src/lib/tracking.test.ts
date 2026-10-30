@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { clampProgress, progressLimit, statusLabel } from './tracking'
+import { clampProgress, formatProgress, progressLimit, statusLabel } from './tracking'
 
 describe('statusLabel', () => {
   it('uses watch wording for anime and play wording for games', () => {
@@ -22,5 +22,13 @@ describe('progress', () => {
     expect(clampProgress('3.7', 26)).toBe(3)
     expect(clampProgress('', 26)).toBe(0)
     expect(clampProgress('1100', null)).toBe(1100)
+  })
+})
+
+describe('formatProgress', () => {
+  it('describes episodes or completion, and hides zero', () => {
+    expect(formatProgress(12, 'anime')).toBe('Episode 12')
+    expect(formatProgress(40, 'game')).toBe('40% complete')
+    expect(formatProgress(0, 'anime')).toBeNull()
   })
 })

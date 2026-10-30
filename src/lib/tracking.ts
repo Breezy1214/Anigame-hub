@@ -36,5 +36,23 @@ export function clampProgress(input: string, limit: number | null) {
 /** Ratings are whole numbers from 1 to MAX_RATING (matching the database check); null means not rated. */
 export const MAX_RATING = 10
 
+export function formatRating(rating: number) {
+  return `${rating} / ${MAX_RATING}`
+}
+
 /** Highest first, as offered in the rating picker. */
 export const RATINGS = Array.from({ length: MAX_RATING }, (_, i) => MAX_RATING - i)
+
+/** Section headings for lists that mix anime and games (the wording in the requirements). */
+export const STATUS_GROUP_LABELS: Record<TrackingStatus, string> = {
+  completed: 'Watched / Played',
+  in_progress: 'In Progress',
+  planned: 'Plan to Watch / Play',
+  dropped: 'Dropped',
+}
+
+/** Short progress text for list items, e.g. "Episode 12" or "40% complete"; null when not started. */
+export function formatProgress(progress: number, type: MediaType) {
+  if (progress === 0) return null
+  return type === 'anime' ? `Episode ${progress}` : `${progress}% complete`
+}
