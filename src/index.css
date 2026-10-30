@@ -38,14 +38,19 @@ body {
 }
 
 :is(.auth-form, .search-form) :is(input, button),
-.primary-button {
+.primary-button,
+.entry-controls select {
   font: inherit;
   padding: 10px 12px;
   border-radius: 6px;
 }
 
-:is(.auth-form, .search-form) input {
+:is(.auth-form, .search-form) input,
+.entry-controls select {
   border: 1px solid var(--border);
+}
+
+:is(.auth-form, .search-form) input {
   margin-bottom: 8px;
 }
 
@@ -233,4 +238,21 @@ a {
 
 .tracking-panel {
   margin-bottom: 16px;
+}
+
+.entry-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+}
+
+.entry-controls select {
+  padding: 6px 8px;
+  background: var(--bg);
+  color: inherit;
+}
+
+.entry-controls .form-error {
+  flex-basis: 100%;
 }
