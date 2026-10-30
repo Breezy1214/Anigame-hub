@@ -18,6 +18,7 @@ export default function Layout() {
           <Link to="/" className="brand">
             AniGame Hub
           </Link>
+          <Link to="/search">Search</Link>
           {!loading &&
             (user ? (
               <>

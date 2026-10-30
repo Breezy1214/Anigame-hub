@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import LoginPage from './LoginPage'
 
 const { signIn } = vi.hoisted(() => ({ signIn: vi.fn() }))
@@ -26,8 +26,6 @@ async function submit(email: string, password: string) {
 }
 
 describe('LoginPage', () => {
-  beforeEach(() => signIn.mockReset())
-
   it('requires both fields', async () => {
     renderPage()
     await submit('a@b.co', '')
