@@ -1,4 +1,4 @@
-import { screen } from '@testing-library/react'
+import { screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { Route } from 'react-router-dom'
 import { describe, expect, it, vi } from 'vitest'
@@ -54,12 +54,17 @@ describe('TrackingPanel', () => {
   })
 
   it('shows the new status before the save finishes', async () => {
-    updateUserMedia.mockReturnValue(new Promise(() => {}))
+    let finishSave!: (entry: UserMedia) => void
+    updateUserMedia.mockReturnValue(new Promise((resolve) => (finishSave = resolve)))
     renderPanel({ status: 'success', data: entry })
 
     await userEvent.selectOptions(screen.getByLabelText('Status'), 'completed')
     expect(screen.getByLabelText('Status')).toHaveValue('completed')
     expect(screen.getByLabelText('Status')).toBeDisabled()
+
+    // Settle the save so the pending transition doesn't leak into later tests.
+    finishSave({ ...entry, status: 'completed' })
+    await waitFor(() => expect(screen.getByLabelText('Status')).toBeEnabled())
   })
 
   it('keeps the old status when an update fails', async () => {
@@ -69,7 +74,7 @@ describe('TrackingPanel', () => {
 
     await userEvent.selectOptions(screen.getByLabelText('Status'), 'dropped')
     expect(await screen.findByRole('alert')).toHaveTextContent('Couldn’t update your list')
-    expect(screen.getByLabelText('Status')).toHaveValue('planned')
+    await waitFor(() => expect(screen.getByLabelText('Status')).toHaveValue('planned'))
   })
 
   it('shows nothing while the entry loads', () => {
