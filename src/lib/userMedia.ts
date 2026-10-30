@@ -57,3 +57,9 @@ export async function updateUserMedia(id: string, changes: TrackingUpdate) {
   if (error) throw error
   return data
 }
+
+/** Removes a title from the user's list, discarding its status, rating, progress and favorite. */
+export async function deleteUserMedia(id: string) {
+  const { error } = await supabase.from('user_media').delete().eq('id', id)
+  if (error) throw error
+}

@@ -59,7 +59,8 @@ body {
 
 :is(.auth-form, .search-form) button:disabled,
 .primary-button:disabled,
-.favorite-button:disabled {
+.favorite-button:disabled,
+.link-button:disabled {
   opacity: 0.6;
   cursor: default;
 }
@@ -238,7 +239,8 @@ a {
   margin-bottom: 16px;
 }
 
-.entry-controls {
+.entry-controls,
+.confirm-remove {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -254,7 +256,7 @@ a {
   color: inherit;
 }
 
-.entry-controls .form-error {
+.entry-controls :is(.form-error, .confirm-remove) {
   flex-basis: 100%;
 }
 
@@ -266,4 +268,18 @@ a {
 
 .progress-field input {
   width: 5em;
+}
+
+.link-button {
+  font: inherit;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--accent);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.danger-button {
+  background: var(--error);
 }

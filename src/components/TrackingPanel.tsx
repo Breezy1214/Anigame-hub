@@ -14,7 +14,7 @@ import {
   TRACKING_STATUSES,
   type TrackingStatus,
 } from '../lib/tracking'
-import { saveMedia, updateUserMedia, type TrackingUpdate, type UserMedia } from '../lib/userMedia'
+import { deleteUserMedia, saveMedia, updateUserMedia, type TrackingUpdate, type UserMedia } from '../lib/userMedia'
 import Field from './Field'
 import FormError from './FormError'
 
@@ -98,9 +98,38 @@ function ProgressField({ value, label, suffix, limit, disabled, onCommit }: Prog
   )
 }
 
-type EntryControlsProps = { entry: UserMedia; limit: number | null; onChange: (entry: UserMedia) => void }
+/** Asks for confirmation before removing, since removal discards the tracking data. */
+function RemoveControl({ disabled, onConfirm }: { disabled: boolean; onConfirm: () => void }) {
+  const [confirming, setConfirming] = useState(false)
 
-function EntryControls({ entry, limit, onChange }: EntryControlsProps) {
+  if (!confirming) {
+    return (
+      <button type="button" className="link-button" disabled={disabled} onClick={() => setConfirming(true)}>
+        Remove from list
+      </button>
+    )
+  }
+  return (
+    <div className="confirm-remove" role="group" aria-label="Confirm removal">
+      <span>Remove from your list? Its status, rating and progress will be lost.</span>
+      <button type="button" className="primary-button danger-button" disabled={disabled} onClick={onConfirm}>
+        Remove
+      </button>
+      <button type="button" className="link-button" disabled={disabled} onClick={() => setConfirming(false)}>
+        Cancel
+      </button>
+    </div>
+  )
+}
+
+type EntryControlsProps = {
+  entry: UserMedia
+  limit: number | null
+  onChange: (entry: UserMedia) => void
+  onRemoved: () => void
+}
+
+function EntryControls({ entry, limit, onChange, onRemoved }: EntryControlsProps) {
   const { pending, error, run } = useListAction('Couldn’t update your list. Please try again.')
   // Show the change straight away; it reverts on its own if the update fails.
   const [shown, setShown] = useOptimistic(entry)
@@ -160,16 +189,29 @@ function EntryControls({ entry, limit, onChange }: EntryControlsProps) {
         disabled={pending}
         onCommit={(progress) => update({ progress })}
       />
+      <RemoveControl disabled={pending} onConfirm={() => run(() => deleteUserMedia(entry.id), onRemoved)} />
       <FormError message={error} />
     </div>
+  )
+}
+
+/** Mounted once the user's entry has loaded, so local state can start from it. */
+function SavedControls({ media, initial }: { media: MediaDetails; initial: UserMedia | null }) {
+  const [entry, setEntry] = useState(initial)
+  if (!entry) return <SaveButton media={media} onSaved={setEntry} />
+  return (
+    <EntryControls
+      entry={entry}
+      limit={progressLimit(media)}
+      onChange={setEntry}
+      onRemoved={() => setEntry(null)}
+    />
   )
 }
 
 /** The signed-in user's tracking controls for one title. `saved` is loaded by the page alongside the details. */
 export default function TrackingPanel({ media, saved }: { media: MediaDetails; saved: SavedEntry }) {
   const location = useLocation()
-  const [changed, setChanged] = useState<UserMedia | null>(null)
-  const entry = changed ?? (saved.status === 'success' ? saved.data : null)
 
   let content
   if (saved.status === 'signed-out') {
@@ -183,10 +225,8 @@ export default function TrackingPanel({ media, saved }: { media: MediaDetails; s
     )
   } else if (saved.status === 'error') {
     content = <FormError message="Couldn’t load your list. Please try again later." />
-  } else if (entry) {
-    content = <EntryControls entry={entry} limit={progressLimit(media)} onChange={setChanged} />
   } else if (saved.status === 'success') {
-    content = <SaveButton media={media} onSaved={setChanged} />
+    content = <SavedControls media={media} initial={saved.data} />
   }
 
   return (
