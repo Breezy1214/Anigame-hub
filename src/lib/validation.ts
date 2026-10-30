@@ -1,5 +1,9 @@
 export const MIN_PASSWORD_LENGTH = 8
 
+export function validateLogin(email: string, password: string) {
+  return email && password ? null : 'Enter your email and password.'
+}
+
 export function validateRegistration(email: string, password: string, confirmPassword: string) {
   if (!/^\S+@\S+\.\S+$/.test(email)) {
     return 'Enter a valid email address.'
