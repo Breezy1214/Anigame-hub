@@ -1,7 +1,8 @@
 import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { useAsync } from '../hooks/useAsync'
-import { MEDIA_TYPE_LABELS, mediaPath } from '../lib/media'
+import { MEDIA_TYPE_LABELS } from '../lib/media'
+import { mediaPath } from '../lib/paths'
 import { formatProgress, formatRating, STATUS_GROUP_LABELS, TRACKING_STATUSES } from '../lib/tracking'
 import { listUserMedia, type UserMedia } from '../lib/userMedia'
 import Cover from './Cover'
@@ -58,6 +59,13 @@ export function UserMediaByStatus({ entries }: { entries: UserMedia[] }) {
       entries={entries.filter((entry) => entry.status === status)}
     />
   ))
+}
+
+const RECENT_LIMIT = 5
+
+/** The most recently changed titles; `entries` must be most recently updated first (as listUserMedia returns them). */
+export function UserMediaRecent({ entries }: { entries: UserMedia[] }) {
+  return <UserMediaGroup title="Recently updated" entries={entries.slice(0, RECENT_LIMIT)} />
 }
 
 export function UserMediaFavorites({ entries }: { entries: UserMedia[] }) {

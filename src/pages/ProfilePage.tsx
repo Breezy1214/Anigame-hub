@@ -3,8 +3,10 @@ import { Link } from 'react-router-dom'
 import { useUser } from '../auth/AuthContext'
 import FormError from '../components/FormError'
 import ProfileForm from '../components/ProfileForm'
+import ProfileHeading from '../components/ProfileHeading'
 import { UserMediaByStatus, UserMediaFavorites, UserMediaLoader } from '../components/UserMediaList'
 import { useAsync } from '../hooks/useAsync'
+import { publicProfilePath } from '../lib/paths'
 import { getProfile, type Profile } from '../lib/profiles'
 
 function ProfileSection({ initial }: { initial: Profile | null }) {
@@ -12,10 +14,13 @@ function ProfileSection({ initial }: { initial: Profile | null }) {
   return (
     <section className="profile-header">
       {profile ? (
-        <>
-          <h1>{profile.display_name ?? profile.username}</h1>
-          <p>@{profile.username}</p>
-        </>
+        <ProfileHeading profile={profile}>
+          {profile.is_public && (
+            <p>
+              <Link to={publicProfilePath(profile.username)}>View public profile</Link>
+            </p>
+          )}
+        </ProfileHeading>
       ) : (
         <>
           <h1>Set up your profile</h1>
