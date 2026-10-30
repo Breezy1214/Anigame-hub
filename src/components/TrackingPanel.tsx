@@ -8,7 +8,7 @@ import {
   PROGRESS_LABELS,
   progressLimit,
   progressSuffix,
-  MAX_RATING,
+  formatRating,
   RATINGS,
   statusLabel,
   TRACKING_STATUSES,
@@ -175,7 +175,7 @@ function EntryControls({ entry, limit, onChange, onRemoved }: EntryControlsProps
         <option value="">Not rated</option>
         {RATINGS.map((rating) => (
           <option key={rating} value={rating}>
-            {rating} / {MAX_RATING}
+            {formatRating(rating)}
           </option>
         ))}
       </select>
