@@ -1,12 +1,13 @@
 import { describe, expect, it, vi } from 'vitest'
+import { profileRow } from '../test/fixtures'
 import { mockQuery } from '../test/mockQuery'
-import { getProfile, saveProfile } from './profiles'
+import { getProfile, getProfileByUsername, saveProfile } from './profiles'
 
 const { from } = vi.hoisted(() => ({ from: vi.fn() }))
 vi.mock('./supabase', () => ({ supabase: { from } }))
 
-const input = { username: 'spike', display_name: 'Spike', bio: null }
-const profile = { id: 'user-1', ...input }
+const profile = profileRow()
+const input = { username: profile.username, display_name: profile.display_name, bio: profile.bio, is_public: false }
 
 describe('getProfile', () => {
   it('loads a profile by user id', async () => {
@@ -35,5 +36,14 @@ describe('saveProfile', () => {
     vi.spyOn(console, 'error').mockImplementation(() => {})
     from.mockReturnValue(mockQuery({ error: { code: '42501', message: 'denied' } }).builder)
     expect(await saveProfile(input)).toMatchObject({ status: 'error', message: expect.stringContaining('Couldn’t save') })
+  })
+})
+
+describe('getProfileByUsername', () => {
+  it('looks a profile up by username', async () => {
+    const query = mockQuery({ data: profile })
+    from.mockReturnValue(query.builder)
+    expect(await getProfileByUsername('spike', new AbortController().signal)).toEqual(profile)
+    expect(query.calls).toContainEqual(['eq', ['username', 'spike']])
   })
 })

@@ -1,7 +1,7 @@
 import { screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
-import { userMediaEntry as entry } from '../test/fixtures'
+import { userMediaEntry as entry, profileRow } from '../test/fixtures'
 import { renderProtectedRoute } from '../test/renderWithAuth'
 import ProfilePage from './ProfilePage'
 
@@ -13,7 +13,7 @@ const { getProfile, saveProfile, listUserMedia } = vi.hoisted(() => ({
 vi.mock('../lib/profiles', () => ({ getProfile, saveProfile }))
 vi.mock('../lib/userMedia', () => ({ listUserMedia }))
 
-const profile = { id: 'user-1', username: 'spike', display_name: 'Spike Spiegel', bio: null }
+const profile = profileRow()
 
 function renderPage(user: { id: string } | null = { id: 'user-1' }) {
   renderProtectedRoute(user, '/profile', <ProfilePage />)
@@ -61,7 +61,7 @@ describe('ProfilePage', () => {
 
     await userEvent.type(screen.getByLabelText('Username'), 'Spike')
     await userEvent.click(screen.getByRole('button', { name: 'Create profile' }))
-    expect(saveProfile).toHaveBeenCalledWith({ username: 'spike', display_name: null, bio: null })
+    expect(saveProfile).toHaveBeenCalledWith({ username: 'spike', display_name: null, bio: null, is_public: false })
     expect(await screen.findByRole('heading', { name: 'spike' })).toBeInTheDocument()
   })
 
@@ -84,5 +84,17 @@ describe('ProfilePage', () => {
 
     await userEvent.click(await screen.findByRole('button', { name: 'Save profile' }))
     expect(await screen.findByRole('alert')).toHaveTextContent('That username is taken.')
+  })
+
+  it('makes the profile public and links to it', async () => {
+    getProfile.mockResolvedValue(profile)
+    listUserMedia.mockResolvedValue([])
+    saveProfile.mockResolvedValue({ status: 'saved', profile: { ...profile, is_public: true } })
+    renderPage()
+
+    await userEvent.click(await screen.findByRole('checkbox', { name: /Make my profile public/ }))
+    await userEvent.click(screen.getByRole('button', { name: 'Save profile' }))
+    expect(saveProfile).toHaveBeenCalledWith(expect.objectContaining({ is_public: true }))
+    expect(await screen.findByRole('link', { name: 'View public profile' })).toHaveAttribute('href', '/u/spike')
   })
 })
