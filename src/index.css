@@ -37,7 +37,8 @@ body {
   gap: 8px;
 }
 
-:is(.auth-form, .search-form) :is(input, button) {
+:is(.auth-form, .search-form) :is(input, button),
+.primary-button {
   font: inherit;
   padding: 10px 12px;
   border-radius: 6px;
@@ -48,14 +49,16 @@ body {
   margin-bottom: 8px;
 }
 
-:is(.auth-form, .search-form) button {
+:is(.auth-form, .search-form) button,
+.primary-button {
   border: none;
   background: var(--accent);
   color: #fff;
   cursor: pointer;
 }
 
-:is(.auth-form, .search-form) button:disabled {
+:is(.auth-form, .search-form) button:disabled,
+.primary-button:disabled {
   opacity: 0.6;
   cursor: default;
 }
@@ -226,4 +229,8 @@ a {
   .media-details img {
     max-width: 240px;
   }
+}
+
+.tracking-panel {
+  margin-bottom: 16px;
 }

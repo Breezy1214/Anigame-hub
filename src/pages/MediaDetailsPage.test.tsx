@@ -1,11 +1,13 @@
-import { render, screen } from '@testing-library/react'
-import { MemoryRouter, Route, Routes } from 'react-router-dom'
+import { screen } from '@testing-library/react'
+import { Route } from 'react-router-dom'
 import { describe, expect, it, vi } from 'vitest'
 import type { MediaDetails } from '../lib/media'
+import { renderWithAuth } from '../test/renderWithAuth'
 import MediaDetailsPage from './MediaDetailsPage'
 
-const { getMediaDetails } = vi.hoisted(() => ({ getMediaDetails: vi.fn() }))
+const { getMediaDetails, findUserMedia } = vi.hoisted(() => ({ getMediaDetails: vi.fn(), findUserMedia: vi.fn() }))
 vi.mock('../lib/mediaService', () => ({ getMediaDetails }))
+vi.mock('../lib/userMedia', () => ({ findUserMedia }))
 
 const bebop: MediaDetails = {
   id: '1',
@@ -19,14 +21,8 @@ const bebop: MediaDetails = {
   episodeCount: 26,
 }
 
-function renderPage(url: string) {
-  render(
-    <MemoryRouter initialEntries={[url]}>
-      <Routes>
-        <Route path="/media/:type/:id" element={<MediaDetailsPage />} />
-      </Routes>
-    </MemoryRouter>,
-  )
+function renderPage(url: string, user: { id: string } | null = null) {
+  renderWithAuth(user, url, <Route path="/media/:type/:id" element={<MediaDetailsPage />} />)
 }
 
 describe('MediaDetailsPage', () => {
@@ -59,5 +55,20 @@ describe('MediaDetailsPage', () => {
     renderPage('/media/movie/1')
     expect(screen.getByRole('alert')).toHaveTextContent('doesn’t exist')
     expect(getMediaDetails).not.toHaveBeenCalled()
+  })
+
+  it('looks up the signed-in user’s entry while the details load', async () => {
+    getMediaDetails.mockReturnValue(new Promise(() => {}))
+    findUserMedia.mockResolvedValue(null)
+    renderPage('/media/anime/1', { id: 'user-1' })
+    expect(screen.getByRole('status')).toHaveTextContent('Loading…')
+    expect(findUserMedia).toHaveBeenCalledWith('user-1', 'anime', '1', expect.any(AbortSignal))
+  })
+
+  it('offers login to signed-out visitors', async () => {
+    getMediaDetails.mockResolvedValue(bebop)
+    renderPage('/media/anime/1')
+    expect(await screen.findByRole('link', { name: 'Log in' })).toBeInTheDocument()
+    expect(findUserMedia).not.toHaveBeenCalled()
   })
 })
