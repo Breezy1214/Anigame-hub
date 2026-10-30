@@ -2,43 +2,63 @@ import { useEffect, useState, type FormEvent } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import FormError from '../components/FormError'
 import MediaCard from '../components/MediaCard'
-import { searchAnime } from '../lib/animeApi'
-import type { MediaSummary } from '../lib/media'
+import type { MediaSummary, MediaType } from '../lib/media'
+import { searchMedia } from '../lib/mediaService'
 
 // `results` is null when the search failed.
-type SearchResult = { query: string; results: MediaSummary[] | null }
+type SearchResult = { key: string; results: MediaSummary[] | null }
+
+const TABS: { type: MediaType; label: string; inputLabel: string }[] = [
+  { type: 'anime', label: 'Anime', inputLabel: 'Anime title' },
+  { type: 'game', label: 'Games', inputLabel: 'Game title' },
+]
 
 export default function SearchPage() {
   const [searchParams, setSearchParams] = useSearchParams()
   const query = searchParams.get('q')?.trim() ?? ''
+  const tab = TABS.find((t) => t.type === searchParams.get('type')) ?? TABS[0]
+  const type = tab.type
+  const key = `${type}:${query}`
   const [input, setInput] = useState(query)
   const [result, setResult] = useState<SearchResult | null>(null)
-  const current = result?.query === query ? result : null
+  const current = result?.key === key ? result : null
 
   useEffect(() => {
     if (!query) return
     const controller = new AbortController()
-    searchAnime(query, controller.signal)
-      .then((results) => setResult({ query, results }))
-      .catch(() => {
-        if (!controller.signal.aborted) setResult({ query, results: null })
+    searchMedia(type, query, controller.signal)
+      .then((results) => setResult({ key, results }))
+      .catch((error) => {
+        if (controller.signal.aborted) return
+        console.error(error)
+        setResult({ key, results: null })
       })
     return () => controller.abort()
-  }, [query])
+  }, [type, query])
+
+  function search(nextType: MediaType, q: string) {
+    setSearchParams(q ? { type: nextType, q } : { type: nextType })
+  }
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    const q = input.trim()
-    setSearchParams(q ? { q } : {})
+    search(type, input.trim())
   }
 
   return (
     <main className="page">
-      <h1>Search anime</h1>
+      <h1>Search</h1>
+      <div className="tabs" role="group" aria-label="Media type">
+        {TABS.map((t) => (
+          <button key={t.type} type="button" aria-pressed={t.type === type} onClick={() => search(t.type, query)}>
+            {t.label}
+          </button>
+        ))}
+      </div>
       <form className="search-form" role="search" onSubmit={handleSubmit}>
         <input
           type="search"
-          aria-label="Anime title"
+          aria-label={tab.inputLabel}
           placeholder="Search by title"
           value={input}
           onChange={(e) => setInput(e.target.value)}
