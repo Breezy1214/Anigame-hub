@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 import { mockFetch } from '../test/mockFetch'
-import { searchGames } from './gameApi'
+import { getGameDetails, searchGames } from './gameApi'
 
 describe('searchGames', () => {
   it('maps RAWG results to media summaries', async () => {
@@ -44,5 +44,33 @@ describe('searchGames', () => {
     const fetchMock = mockFetch(200, { results: [] })
     await expect(searchGames('witcher')).rejects.toThrow('VITE_RAWG_API_KEY')
     expect(fetchMock).not.toHaveBeenCalled()
+  })
+})
+
+describe('getGameDetails', () => {
+  it('maps a RAWG game to details', async () => {
+    vi.stubEnv('VITE_RAWG_API_KEY', 'test-key')
+    const fetchMock = mockFetch(200, {
+      id: 3328,
+      name: 'The Witcher 3: Wild Hunt',
+      background_image: null,
+      released: '2015-05-18',
+      description_raw: ' Geralt hunts monsters. ',
+      genres: [{ name: 'RPG' }],
+      platforms: [{ platform: { name: 'PC' } }, { platform: { name: 'PlayStation 4' } }],
+    })
+
+    expect(await getGameDetails('3328')).toEqual({
+      id: '3328',
+      type: 'game',
+      title: 'The Witcher 3: Wild Hunt',
+      coverUrl: null,
+      releaseYear: 2015,
+      description: 'Geralt hunts monsters.',
+      genres: ['RPG'],
+      releaseDate: '2015-05-18',
+      platforms: ['PC', 'PlayStation 4'],
+    })
+    expect(new URL(fetchMock.mock.calls[0][0]).pathname).toBe('/api/games/3328')
   })
 })
