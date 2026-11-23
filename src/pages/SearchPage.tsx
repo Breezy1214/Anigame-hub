@@ -20,6 +20,12 @@ export default function SearchPage() {
   const type = tab.type
   const key = `${type}:${query}`
   const [input, setInput] = useState(query)
+  const [inputQuery, setInputQuery] = useState(query)
+  // Back/forward changes the query without a submit; show it in the box.
+  if (inputQuery !== query) {
+    setInputQuery(query)
+    setInput(query)
+  }
   const [result, setResult] = useState<SearchResult | null>(null)
   const current = result?.key === key ? result : null
 
