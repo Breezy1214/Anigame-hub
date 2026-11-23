@@ -17,6 +17,12 @@ export default function SearchPage() {
   const tab = TABS.find((t) => t.type === searchParams.get('type')) ?? TABS[0]
   const type = tab.type
   const [input, setInput] = useState(query)
+  const [inputQuery, setInputQuery] = useState(query)
+  // Back/forward changes the query without a submit; show it in the box.
+  if (inputQuery !== query) {
+    setInputQuery(query)
+    setInput(query)
+  }
   const search = useAsync(`${type}:${query}`, query ? (signal) => searchMedia(type, query, signal) : null)
 
   function go(nextType: MediaType, q: string) {
