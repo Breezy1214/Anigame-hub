@@ -2,12 +2,13 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { Link, MemoryRouter } from 'react-router-dom'
 import { describe, expect, it, vi } from 'vitest'
+import { mediaSummary } from '../test/fixtures'
 import SearchPage from './SearchPage'
 
 const { searchMedia } = vi.hoisted(() => ({ searchMedia: vi.fn() }))
 vi.mock('../lib/mediaService', () => ({ searchMedia }))
 
-const frieren = { id: '1', type: 'anime', title: 'Frieren', coverUrl: null, releaseYear: 2023 }
+const frieren = mediaSummary({ title: 'Frieren', releaseYear: 2023 })
 
 function renderPage(url = '/search') {
   render(

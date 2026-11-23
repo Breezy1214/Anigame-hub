@@ -1,4 +1,4 @@
-import type { AnimeDetails, MediaSummary } from './media'
+import type { AnimeDetails, AnimeHome, MediaSummary } from './media'
 
 const ANILIST_URL = 'https://graphql.anilist.co'
 
@@ -9,11 +9,14 @@ type AniListDate = { year: number | null; month: number | null; day: number | nu
 type AniListSummary = {
   id: number
   title: AniListTitle
-  coverImage: { large: string | null }
+  coverImage: { large: string | null; color: string | null }
   startDate: AniListDate
+  averageScore: number | null
+  format: string | null
 }
 
 type AniListDetails = AniListSummary & {
+  bannerImage: string | null
   description: string | null
   genres: string[]
   episodes: number | null
@@ -33,36 +36,76 @@ async function anilist<T>(query: string, variables: Record<string, unknown>, sig
   return body.data
 }
 
+const SUMMARY_FIELDS = `
+  id
+  title { romaji english }
+  coverImage { large color }
+  startDate { year }
+  averageScore
+  format
+`
+
 const SEARCH_QUERY = `
   query ($search: String) {
     Page(perPage: 24) {
-      media(search: $search, type: ANIME, isAdult: false, sort: SEARCH_MATCH) {
-        id
-        title { romaji english }
-        coverImage { large }
-        startDate { year }
-      }
+      media(search: $search, type: ANIME, isAdult: false, sort: SEARCH_MATCH) { ${SUMMARY_FIELDS} }
     }
   }
 `
 
-function titleOf(title: AniListTitle) {
-  return title.english ?? title.romaji ?? 'Untitled'
-}
+const HOME_QUERY = `
+  query ($season: MediaSeason, $year: Int) {
+    trending: Page(perPage: 12) {
+      media(type: ANIME, isAdult: false, sort: TRENDING_DESC) { ${SUMMARY_FIELDS} }
+    }
+    season: Page(perPage: 12) {
+      media(type: ANIME, isAdult: false, season: $season, seasonYear: $year, sort: POPULARITY_DESC) { ${SUMMARY_FIELDS} }
+    }
+    top: Page(perPage: 10) {
+      media(type: ANIME, isAdult: false, sort: SCORE_DESC) { ${SUMMARY_FIELDS} }
+    }
+  }
+`
 
 const DETAILS_QUERY = `
   query ($id: Int) {
     Media(id: $id, type: ANIME) {
       id
       title { romaji english }
-      coverImage { large }
+      coverImage { large: extraLarge color }
+      bannerImage
       startDate { year month day }
+      averageScore
+      format
       description(asHtml: false)
       genres
       episodes
     }
   }
 `
+
+const FORMAT_LABELS: Partial<Record<string, string>> = {
+  TV: 'TV',
+  TV_SHORT: 'TV short',
+  MOVIE: 'Movie',
+  SPECIAL: 'Special',
+  OVA: 'OVA',
+  ONA: 'ONA',
+  MUSIC: 'Music video',
+}
+
+const SEASONS = ['WINTER', 'SPRING', 'SUMMER', 'FALL'] as const
+
+/** The anime season a date falls in, as AniList names it, plus a label such as "Fall 2026". */
+export function seasonOf(date: Date) {
+  const season = SEASONS[Math.floor(date.getMonth() / 3)]
+  const year = date.getFullYear()
+  return { season, year, label: `${season[0]}${season.slice(1).toLowerCase()} ${year}` }
+}
+
+function titleOf(title: AniListTitle) {
+  return title.english ?? title.romaji ?? 'Untitled'
+}
 
 function isoDate({ year, month, day }: AniListDate) {
   if (!year) return null
@@ -84,7 +127,10 @@ function toSummary(media: AniListSummary): MediaSummary & { type: 'anime' } {
     type: 'anime',
     title: titleOf(media.title),
     coverUrl: media.coverImage.large,
+    coverColor: media.coverImage.color,
     releaseYear: media.startDate.year,
+    score: media.averageScore,
+    category: media.format && (FORMAT_LABELS[media.format] ?? media.format),
   }
 }
 
@@ -92,6 +138,7 @@ export async function getAnimeDetails(id: string, signal?: AbortSignal): Promise
   const { Media: media } = await anilist<{ Media: AniListDetails }>(DETAILS_QUERY, { id: Number(id) }, signal)
   return {
     ...toSummary(media),
+    bannerUrl: media.bannerImage,
     description: plainText(media.description),
     genres: media.genres,
     releaseDate: isoDate(media.startDate),
@@ -102,4 +149,17 @@ export async function getAnimeDetails(id: string, signal?: AbortSignal): Promise
 export async function searchAnime(query: string, signal?: AbortSignal): Promise<MediaSummary[]> {
   const data = await anilist<{ Page: { media: AniListSummary[] } }>(SEARCH_QUERY, { search: query }, signal)
   return data.Page.media.map(toSummary)
+}
+
+type Shelf = { media: AniListSummary[] }
+
+export async function getAnimeHome(signal?: AbortSignal, today = new Date()): Promise<AnimeHome> {
+  const { season, year, label } = seasonOf(today)
+  const data = await anilist<{ trending: Shelf; season: Shelf; top: Shelf }>(HOME_QUERY, { season, year }, signal)
+  return {
+    trending: data.trending.media.map(toSummary),
+    season: data.season.media.map(toSummary),
+    seasonLabel: label,
+    top: data.top.media.map(toSummary),
+  }
 }

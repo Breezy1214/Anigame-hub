@@ -1,3 +1,4 @@
+import type { AnimeDetails, MediaSummary } from '../lib/media'
 import type { Profile } from '../lib/profiles'
 import type { UserMedia } from '../lib/userMedia'
 
@@ -30,6 +31,35 @@ export function profileRow(overrides: Partial<Profile> = {}): Profile {
     is_public: false,
     created_at: '',
     updated_at: '',
+    ...overrides,
+  }
+}
+
+/** Cowboy Bebop as a search result; override what a test cares about. */
+export function mediaSummary(overrides: Partial<MediaSummary> = {}): MediaSummary {
+  return {
+    id: '1',
+    type: 'anime',
+    title: 'Cowboy Bebop',
+    coverUrl: null,
+    coverColor: null,
+    releaseYear: 1998,
+    score: null,
+    category: null,
+    ...overrides,
+  }
+}
+
+/** Cowboy Bebop's details page data; override what a test cares about. */
+export function animeDetails(overrides: Partial<AnimeDetails> = {}): AnimeDetails {
+  return {
+    ...mediaSummary(),
+    type: 'anime',
+    bannerUrl: null,
+    description: null,
+    genres: [],
+    releaseDate: null,
+    episodeCount: 26,
     ...overrides,
   }
 }

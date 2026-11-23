@@ -1,7 +1,8 @@
-import { screen } from '@testing-library/react'
+import { screen, within } from '@testing-library/react'
 import { Route } from 'react-router-dom'
 import { describe, expect, it, vi } from 'vitest'
 import type { MediaDetails } from '../lib/media'
+import { animeDetails } from '../test/fixtures'
 import { renderWithAuth } from '../test/renderWithAuth'
 import MediaDetailsPage from './MediaDetailsPage'
 
@@ -9,17 +10,12 @@ const { getMediaDetails, findUserMedia } = vi.hoisted(() => ({ getMediaDetails: 
 vi.mock('../lib/mediaService', () => ({ getMediaDetails }))
 vi.mock('../lib/userMedia', () => ({ findUserMedia }))
 
-const bebop: MediaDetails = {
-  id: '1',
-  type: 'anime',
-  title: 'Cowboy Bebop',
+const bebop: MediaDetails = animeDetails({
   coverUrl: 'https://img/bebop.jpg',
-  releaseYear: 1998,
   description: 'Bounty hunters in space.',
   genres: ['Action', 'Sci-Fi'],
   releaseDate: '1998',
-  episodeCount: 26,
-}
+})
 
 function renderPage(url: string, user: { id: string } | null = null) {
   renderWithAuth(user, url, <Route path="/media/:type/:id" element={<MediaDetailsPage />} />)
@@ -33,7 +29,10 @@ describe('MediaDetailsPage', () => {
     expect(getMediaDetails).toHaveBeenCalledWith('anime', '1', expect.any(AbortSignal))
     expect(screen.getByRole('img', { name: 'Cover of Cowboy Bebop' })).toHaveAttribute('src', 'https://img/bebop.jpg')
     expect(screen.getByText('Bounty hunters in space.')).toBeInTheDocument()
-    expect(screen.getByText('Action, Sci-Fi')).toBeInTheDocument()
+    expect(within(screen.getByRole('list', { name: 'Genres' })).getAllByRole('listitem').map((li) => li.textContent)).toEqual([
+      'Action',
+      'Sci-Fi',
+    ])
     expect(screen.getByText('26')).toBeInTheDocument()
     expect(screen.queryByText('Platforms')).not.toBeInTheDocument()
   })
