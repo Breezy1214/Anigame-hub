@@ -58,7 +58,8 @@ body {
 }
 
 :is(.auth-form, .search-form) button:disabled,
-.primary-button:disabled {
+.primary-button:disabled,
+.favorite-button:disabled {
   opacity: 0.6;
   cursor: default;
 }
@@ -91,7 +92,8 @@ a {
   text-decoration: none;
 }
 
-:is(.site-header, .tabs) button {
+:is(.site-header, .tabs) button,
+.favorite-button {
   font: inherit;
   background: none;
   border: 1px solid var(--border);
@@ -176,12 +178,13 @@ a {
   margin-bottom: 12px;
 }
 
-.tabs button {
+.tabs button,
+.favorite-button {
   padding: 6px 14px;
   border-radius: 999px;
 }
 
-.tabs button[aria-pressed='true'] {
+:is(.tabs button, .favorite-button)[aria-pressed='true'] {
   background: var(--accent);
   border-color: var(--accent);
   color: #fff;
