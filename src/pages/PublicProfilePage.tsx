@@ -36,7 +36,8 @@ function PublicProfile({ profile }: { profile: Profile }) {
 
 /** FR-14: anyone can view a public profile's lists, ratings, favorites and current activity. */
 export default function PublicProfilePage() {
-  const { username = '' } = useParams()
+  // Usernames are stored lowercase; accept links typed with capitals.
+  const username = (useParams().username ?? '').toLowerCase()
   const profile = useAsync(`profile:${username}`, (signal) => getProfileByUsername(username, signal))
   const found = profile.status === 'success' ? profile.data : null
 
