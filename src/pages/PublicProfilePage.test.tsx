@@ -14,8 +14,8 @@ vi.mock('../lib/userMedia', () => ({ listUserMedia }))
 
 const profile = profileRow({ bio: 'Bounty hunter.', is_public: true })
 
-function renderPage(viewer: { id: string } | null = null) {
-  renderWithAuth(viewer, '/u/spike', <Route path="/u/:username" element={<PublicProfilePage />} />)
+function renderPage(viewer: { id: string } | null = null, url = '/u/spike') {
+  renderWithAuth(viewer, url, <Route path="/u/:username" element={<PublicProfilePage />} />)
 }
 
 describe('PublicProfilePage', () => {
@@ -38,6 +38,14 @@ describe('PublicProfilePage', () => {
     expect(within(screen.getByRole('list', { name: 'Favorites' })).getByText(/Cowboy Bebop/)).toBeInTheDocument()
     expect(within(screen.getByRole('list', { name: 'Watched / Played' })).getByText('Anime · 10 / 10')).toBeInTheDocument()
     expect(screen.queryByText(/only you can see this page/)).not.toBeInTheDocument()
+  })
+
+  it('matches usernames case-insensitively', async () => {
+    getProfileByUsername.mockResolvedValue(profile)
+    listUserMedia.mockResolvedValue([])
+    renderPage(null, '/u/Spike')
+    expect(await screen.findByRole('heading', { name: 'Spike Spiegel' })).toBeInTheDocument()
+    expect(getProfileByUsername).toHaveBeenCalledWith('spike', expect.any(AbortSignal))
   })
 
   it('reports missing or private profiles', async () => {
