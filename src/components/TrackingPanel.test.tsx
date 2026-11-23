@@ -7,8 +7,12 @@ import type { UserMedia } from '../lib/userMedia'
 import { renderWithAuth } from '../test/renderWithAuth'
 import TrackingPanel, { type SavedEntry } from './TrackingPanel'
 
-const { saveMedia, updateUserMedia } = vi.hoisted(() => ({ saveMedia: vi.fn(), updateUserMedia: vi.fn() }))
-vi.mock('../lib/userMedia', () => ({ saveMedia, updateUserMedia }))
+const { saveMedia, updateUserMedia, deleteUserMedia } = vi.hoisted(() => ({
+  saveMedia: vi.fn(),
+  updateUserMedia: vi.fn(),
+  deleteUserMedia: vi.fn(),
+}))
+vi.mock('../lib/userMedia', () => ({ saveMedia, updateUserMedia, deleteUserMedia }))
 
 const media: AnimeDetails = {
   id: '1',
@@ -167,5 +171,38 @@ describe('TrackingPanel', () => {
     expect(updateUserMedia).toHaveBeenLastCalledWith('row-1', { favorite: false })
     await waitFor(() => expect(favorite).toBeEnabled())
     expect(favorite).toHaveAttribute('aria-pressed', 'false')
+  })
+
+  it('removes a title after confirmation', async () => {
+    deleteUserMedia.mockResolvedValue(undefined)
+    renderPanel({ status: 'success', data: entry })
+
+    await userEvent.click(screen.getByRole('button', { name: 'Remove from list' }))
+    expect(deleteUserMedia).not.toHaveBeenCalled()
+    await userEvent.click(screen.getByRole('button', { name: 'Remove' }))
+
+    expect(deleteUserMedia).toHaveBeenCalledWith('row-1')
+    expect(await screen.findByRole('button', { name: 'Save to my list' })).toBeInTheDocument()
+    expect(screen.queryByLabelText('Status')).not.toBeInTheDocument()
+  })
+
+  it('keeps the title when removal is cancelled', async () => {
+    renderPanel({ status: 'success', data: entry })
+
+    await userEvent.click(screen.getByRole('button', { name: 'Remove from list' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Cancel' }))
+    expect(deleteUserMedia).not.toHaveBeenCalled()
+    expect(screen.getByRole('button', { name: 'Remove from list' })).toBeInTheDocument()
+  })
+
+  it('keeps the title when removal fails', async () => {
+    deleteUserMedia.mockRejectedValue(new Error('offline'))
+    vi.spyOn(console, 'error').mockImplementation(() => {})
+    renderPanel({ status: 'success', data: entry })
+
+    await userEvent.click(screen.getByRole('button', { name: 'Remove from list' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Remove' }))
+    expect(await screen.findByRole('alert')).toHaveTextContent('Couldn’t update your list')
+    expect(screen.getByLabelText('Status')).toBeInTheDocument()
   })
 })
