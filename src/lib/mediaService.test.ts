@@ -17,6 +17,20 @@ describe('mediaService', () => {
     expect(getGameDetails).toHaveBeenCalledWith('9', undefined)
   })
 
+  it('evicts the least recently used entry', async () => {
+    searchAnime.mockResolvedValue([])
+    await searchMedia('anime', 'keep')
+    for (let i = 0; i < 99; i++) await searchMedia('anime', `lru${i}`)
+    await searchMedia('anime', 'keep')
+    await searchMedia('anime', 'overflow')
+    searchAnime.mockClear()
+
+    await searchMedia('anime', 'keep')
+    expect(searchAnime).not.toHaveBeenCalled()
+    await searchMedia('anime', 'lru0')
+    expect(searchAnime).toHaveBeenCalledTimes(1)
+  })
+
   it('does not cache failures', async () => {
     searchAnime.mockRejectedValueOnce(new Error('down')).mockResolvedValueOnce([])
     await expect(searchMedia('anime', 'retry')).rejects.toThrow('down')
