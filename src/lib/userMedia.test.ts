@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 import { mockQuery } from '../test/mockQuery'
-import { findUserMedia, saveMedia } from './userMedia'
+import { findUserMedia, saveMedia, updateUserMedia } from './userMedia'
 
 const { from } = vi.hoisted(() => ({ from: vi.fn() }))
 vi.mock('./supabase', () => ({ supabase: { from } }))
@@ -52,6 +52,19 @@ describe('saveMedia', () => {
         { external_media_id: '1', media_type: 'anime', title: 'Cowboy Bebop', cover_url: 'https://img/bebop.jpg' },
         { onConflict: 'user_id,media_type,external_media_id' },
       ],
+    ])
+  })
+})
+
+describe('updateUserMedia', () => {
+  it('updates one row by id and returns it', async () => {
+    const query = mockQuery({ data: { ...row, status: 'completed' } })
+    from.mockReturnValue(query.builder)
+
+    expect(await updateUserMedia('row-1', { status: 'completed' })).toMatchObject({ status: 'completed' })
+    expect(query.calls.slice(0, 2)).toEqual([
+      ['update', [{ status: 'completed' }]],
+      ['eq', ['id', 'row-1']],
     ])
   })
 })

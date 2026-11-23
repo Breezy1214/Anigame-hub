@@ -1,7 +1,6 @@
 import type { MediaSummary, MediaType } from './media'
 import { supabase } from './supabase'
-
-export type TrackingStatus = 'planned' | 'in_progress' | 'completed' | 'dropped'
+import type { TrackingStatus } from './tracking'
 
 /** A row of `public.user_media` (see supabase/migrations). */
 export type UserMedia = {
@@ -46,6 +45,15 @@ export async function saveMedia(media: MediaSummary) {
     )
     .select()
     .single<UserMedia>()
+  if (error) throw error
+  return data
+}
+
+/** The tracking fields a user can change on a saved title. */
+export type TrackingUpdate = Partial<Pick<UserMedia, 'status' | 'progress' | 'rating' | 'favorite'>>
+
+export async function updateUserMedia(id: string, changes: TrackingUpdate) {
+  const { data, error } = await supabase.from('user_media').update(changes).eq('id', id).select().single<UserMedia>()
   if (error) throw error
   return data
 }
