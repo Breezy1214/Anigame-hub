@@ -1,10 +1,8 @@
 import { Link } from 'react-router-dom'
 import { useUser } from '../auth/AuthContext'
-import { UserMediaFavorites, UserMediaGroup, UserMediaLoader } from '../components/UserMediaList'
+import { UserMediaFavorites, UserMediaGroup, UserMediaLoader, UserMediaRecent } from '../components/UserMediaList'
 import { STATUS_GROUP_LABELS } from '../lib/tracking'
 import type { UserMedia } from '../lib/userMedia'
-
-const RECENT_LIMIT = 5
 
 function Stat({ label, value }: { label: string; value: number }) {
   return (
@@ -25,8 +23,7 @@ function Dashboard({ entries }: { entries: UserMedia[] }) {
         <Stat label="Favorites" value={entries.filter((entry) => entry.favorite).length} />
       </dl>
       <div className="dashboard-columns">
-        {/* `entries` arrive most recently updated first. */}
-        <UserMediaGroup title="Recently updated" entries={entries.slice(0, RECENT_LIMIT)} />
+        <UserMediaRecent entries={entries} />
         <UserMediaGroup
           title={STATUS_GROUP_LABELS.in_progress}
           entries={entries.filter((entry) => entry.status === 'in_progress')}

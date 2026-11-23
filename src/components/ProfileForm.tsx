@@ -8,6 +8,7 @@ export default function ProfileForm({ profile, onSaved }: { profile: Profile | n
   const [username, setUsername] = useState(profile?.username ?? '')
   const [displayName, setDisplayName] = useState(profile?.display_name ?? '')
   const [bio, setBio] = useState(profile?.bio ?? '')
+  const [isPublic, setIsPublic] = useState(profile?.is_public ?? false)
   const [outcome, setOutcome] = useState<SaveProfileResult | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const submitLabel = profile ? 'Save profile' : 'Create profile'
@@ -21,7 +22,12 @@ export default function ProfileForm({ profile, onSaved }: { profile: Profile | n
     }
 
     setSubmitting(true)
-    const result = await saveProfile({ username, display_name: displayName.trim() || null, bio: bio.trim() || null })
+    const result = await saveProfile({
+      username,
+      display_name: displayName.trim() || null,
+      bio: bio.trim() || null,
+      is_public: isPublic,
+    })
     setSubmitting(false)
     setOutcome(result)
     if (result.status === 'saved') onSaved(result.profile)
@@ -46,6 +52,10 @@ export default function ProfileForm({ profile, onSaved }: { profile: Profile | n
       />
       <label htmlFor="bio">Bio</label>
       <textarea id="bio" maxLength={500} rows={3} value={bio} onChange={(e) => setBio(e.target.value)} />
+      <label className="checkbox-field">
+        <input type="checkbox" checked={isPublic} onChange={(e) => setIsPublic(e.target.checked)} />
+        Make my profile public (anyone with the link can see your profile and list)
+      </label>
 
       <FormError message={outcome?.status === 'error' ? outcome.message : null} />
       {outcome?.status === 'saved' && <p role="status">Profile saved.</p>}

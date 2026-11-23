@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
-import { mediaPath, type MediaSummary } from '../lib/media'
+import type { MediaSummary } from '../lib/media'
+import { mediaPath } from '../lib/paths'
 import Cover from './Cover'
 
 export default function MediaCard({ media }: { media: MediaSummary }) {

@@ -369,3 +369,18 @@ a {
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 0 32px;
 }
+
+.checkbox-field {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.checkbox-field input {
+  margin: 4px 0 0;
+}
+
+.profile-bio {
+  white-space: pre-line;
+}
