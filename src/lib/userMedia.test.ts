@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
+import { mediaSummary } from '../test/fixtures'
 import { mockQuery } from '../test/mockQuery'
-import { deleteUserMedia, findUserMedia, listUserMedia, saveMedia, updateUserMedia } from './userMedia'
+import { deleteUserMedia, findUserMedia, listInProgress, listUserMedia, saveMedia, updateUserMedia } from './userMedia'
 
 const { from } = vi.hoisted(() => ({ from: vi.fn() }))
 vi.mock('./supabase', () => ({ supabase: { from } }))
@@ -38,13 +39,7 @@ describe('saveMedia', () => {
     const query = mockQuery({ data: row })
     from.mockReturnValue(query.builder)
 
-    const saved = await saveMedia({
-      id: '1',
-      type: 'anime',
-      title: 'Cowboy Bebop',
-      coverUrl: 'https://img/bebop.jpg',
-      releaseYear: 1998,
-    })
+    const saved = await saveMedia(mediaSummary({ coverUrl: 'https://img/bebop.jpg' }))
     expect(saved).toEqual(row)
     expect(query.calls[0]).toEqual([
       'upsert',
@@ -93,5 +88,16 @@ describe('listUserMedia', () => {
     expect(await listUserMedia('user-1', signal)).toEqual([row])
     expect(query.calls).toContainEqual(['eq', ['user_id', 'user-1']])
     expect(query.calls).toContainEqual(['order', ['updated_at', { ascending: false }]])
+  })
+})
+
+describe('listInProgress', () => {
+  it('lists only in-progress titles, most recent first, up to the limit', async () => {
+    const query = mockQuery({ data: [row] })
+    from.mockReturnValue(query.builder)
+    expect(await listInProgress('user-1', 6, signal)).toEqual([row])
+    expect(query.calls).toContainEqual(['eq', ['status', 'in_progress']])
+    expect(query.calls).toContainEqual(['order', ['updated_at', { ascending: false }]])
+    expect(query.calls).toContainEqual(['limit', [6]])
   })
 })

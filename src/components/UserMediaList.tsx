@@ -8,7 +8,7 @@ import { listUserMedia, type UserMedia } from '../lib/userMedia'
 import Cover from './Cover'
 import FormError from './FormError'
 
-function UserMediaItem({ entry }: { entry: UserMedia }) {
+export function UserMediaItem({ entry }: { entry: UserMedia }) {
   const details = [
     MEDIA_TYPE_LABELS[entry.media_type],
     entry.rating !== null && formatRating(entry.rating),

@@ -76,3 +76,18 @@ export async function listUserMedia(userId: string, signal: AbortSignal) {
   if (error) throw error
   return data
 }
+
+/** The user's most recently updated titles that are in progress. */
+export async function listInProgress(userId: string, limit: number, signal: AbortSignal) {
+  const { data, error } = await supabase
+    .from('user_media')
+    .select()
+    .eq('user_id', userId)
+    .eq('status', 'in_progress')
+    .order('updated_at', { ascending: false })
+    .limit(limit)
+    .abortSignal(signal)
+    .returns<UserMedia[]>()
+  if (error) throw error
+  return data
+}

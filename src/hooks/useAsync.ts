@@ -6,6 +6,11 @@ export type AsyncState<T> =
   | { status: 'error' }
   | { status: 'success'; data: T }
 
+/** Narrows a loaded value (e.g. one shelf out of a page's data), passing other states through. */
+export function mapAsync<T, U>(state: AsyncState<T>, pick: (data: T) => U): AsyncState<U> {
+  return state.status === 'success' ? { status: 'success', data: pick(state.data) } : state
+}
+
 /**
  * Runs `load` whenever `key` changes and aborts the previous run; a null `load` means "nothing to load".
  * `key` must encode every input `load` depends on.

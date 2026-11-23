@@ -2,20 +2,18 @@ import { useState, type FormEvent } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import FormError from '../components/FormError'
 import MediaCard from '../components/MediaCard'
+import TypeSwitch from '../components/TypeSwitch'
 import { useAsync } from '../hooks/useAsync'
-import type { MediaType } from '../lib/media'
+import { isMediaType, type MediaType } from '../lib/media'
 import { searchMedia } from '../lib/mediaService'
 
-const TABS: { type: MediaType; label: string; inputLabel: string }[] = [
-  { type: 'anime', label: 'Anime', inputLabel: 'Anime title' },
-  { type: 'game', label: 'Games', inputLabel: 'Game title' },
-]
+const INPUT_LABELS: Record<MediaType, string> = { anime: 'Anime title', game: 'Game title' }
 
 export default function SearchPage() {
   const [searchParams, setSearchParams] = useSearchParams()
   const query = searchParams.get('q')?.trim() ?? ''
-  const tab = TABS.find((t) => t.type === searchParams.get('type')) ?? TABS[0]
-  const type = tab.type
+  const typeParam = searchParams.get('type')
+  const type: MediaType = isMediaType(typeParam) ? typeParam : 'anime'
   const [input, setInput] = useState(query)
   const [inputQuery, setInputQuery] = useState(query)
   // Back/forward changes the query without a submit; show it in the box.
@@ -37,17 +35,11 @@ export default function SearchPage() {
   return (
     <main className="page">
       <h1>Search</h1>
-      <div className="tabs" role="group" aria-label="Media type">
-        {TABS.map((t) => (
-          <button key={t.type} type="button" aria-pressed={t.type === type} onClick={() => go(t.type, query)}>
-            {t.label}
-          </button>
-        ))}
-      </div>
-      <form className="search-form" role="search" onSubmit={handleSubmit}>
+      <TypeSwitch value={type} onChange={(nextType) => go(nextType, query)} />
+      <form className="search-form" role="search" data-type={type} onSubmit={handleSubmit}>
         <input
           type="search"
-          aria-label={tab.inputLabel}
+          aria-label={INPUT_LABELS[type]}
           placeholder="Search by title"
           value={input}
           onChange={(e) => setInput(e.target.value)}
@@ -59,7 +51,7 @@ export default function SearchPage() {
       {search.status === 'error' && <FormError message="Search is unavailable right now. Please try again." />}
       {search.status === 'success' &&
         (search.data.length ? (
-          <ul className="media-grid" aria-label="Search results">
+          <ul className="media-grid" data-type={type} aria-label="Search results">
             {search.data.map((media) => (
               <li key={media.id}>
                 <MediaCard media={media} />

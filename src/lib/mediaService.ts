@@ -1,6 +1,6 @@
-import { getAnimeDetails, searchAnime } from './animeApi'
-import { getGameDetails, searchGames } from './gameApi'
-import type { MediaDetails, MediaSummary, MediaType } from './media'
+import { getAnimeDetails, getAnimeHome as fetchAnimeHome, searchAnime } from './animeApi'
+import { getGameDetails, getGameHome as fetchGameHome, searchGames } from './gameApi'
+import type { AnimeHome, GameHome, MediaDetails, MediaSummary, MediaType } from './media'
 
 const apis = {
   anime: { search: searchAnime, details: getAnimeDetails },
@@ -26,4 +26,12 @@ export function searchMedia(type: MediaType, query: string, signal?: AbortSignal
 
 export function getMediaDetails(type: MediaType, id: string, signal?: AbortSignal): Promise<MediaDetails> {
   return cached<MediaDetails>(`details:${type}:${id}`, () => apis[type].details(id, signal))
+}
+
+export function getAnimeHome(signal?: AbortSignal): Promise<AnimeHome> {
+  return cached('home:anime', () => fetchAnimeHome(signal))
+}
+
+export function getGameHome(signal?: AbortSignal): Promise<GameHome> {
+  return cached('home:game', () => fetchGameHome(signal))
 }

@@ -2,8 +2,9 @@ import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { Route } from 'react-router-dom'
 import { describe, expect, it, vi } from 'vitest'
-import type { AnimeDetails, MediaDetails } from '../lib/media'
+import type { MediaDetails } from '../lib/media'
 import type { UserMedia } from '../lib/userMedia'
+import { animeDetails, userMediaEntry } from '../test/fixtures'
 import { renderWithAuth } from '../test/renderWithAuth'
 import TrackingPanel, { type SavedEntry } from './TrackingPanel'
 
@@ -14,19 +15,9 @@ const { saveMedia, updateUserMedia, deleteUserMedia } = vi.hoisted(() => ({
 }))
 vi.mock('../lib/userMedia', () => ({ saveMedia, updateUserMedia, deleteUserMedia }))
 
-const media: AnimeDetails = {
-  id: '1',
-  type: 'anime',
-  title: 'Cowboy Bebop',
-  coverUrl: null,
-  releaseYear: 1998,
-  description: null,
-  genres: [],
-  releaseDate: null,
-  episodeCount: 26,
-}
+const media = animeDetails()
 
-const entry = { id: 'row-1', media_type: 'anime', status: 'planned', progress: 0, rating: null, favorite: false } as UserMedia
+const entry = userMediaEntry({ id: 'row-1' })
 
 function renderPanel(saved: SavedEntry, details: MediaDetails = media) {
   renderWithAuth(null, '/media/anime/1', [
