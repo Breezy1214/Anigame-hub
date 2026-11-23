@@ -1,10 +1,12 @@
-import { Link, Outlet, useNavigate } from 'react-router-dom'
+import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext'
+import { loginState } from '../auth/loginState'
 import { signOut } from '../lib/auth'
 
 export default function Layout() {
   const { user, loading } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
 
   async function handleSignOut() {
     await signOut()
@@ -29,7 +31,9 @@ export default function Layout() {
               </>
             ) : (
               <>
-                <Link to="/login">Log in</Link>
+                <Link to="/login" state={loginState(location)}>
+                  Log in
+                </Link>
                 <Link to="/register">Register</Link>
               </>
             ))}

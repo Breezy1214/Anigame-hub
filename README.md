@@ -19,7 +19,8 @@ Locked from [Requirements.md](Requirements.md):
 ## Getting Started
 
 1. Copy `.env.example` to `.env` and fill in your Supabase project URL and anon key, plus a free [RAWG API key](https://rawg.io/apidocs) for game search.
-2. `npm install`
-3. `npm run dev`
+2. Apply the database migrations in `supabase/migrations/` (in filename order), either with the [Supabase CLI](https://supabase.com/docs/guides/cli) (`supabase link` then `supabase db push`) or by running each file in the dashboard's SQL editor.
+3. `npm install`
+4. `npm run dev`
 
 Other scripts: `npm test`, `npm run lint`, `npm run build`.
