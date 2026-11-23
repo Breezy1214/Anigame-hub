@@ -19,11 +19,16 @@ export default function RegisterPage() {
     if (validationError) return
 
     setSubmitting(true)
-    const result = await signUp(email, password)
-    setSubmitting(false)
-    if (result.status === 'signed-in') navigate('/')
-    else if (result.status === 'confirm-email') setAwaitingConfirmation(true)
-    else setError(result.message)
+    try {
+      const result = await signUp(email, password)
+      if (result.status === 'signed-in') navigate('/', { replace: true })
+      else if (result.status === 'confirm-email') setAwaitingConfirmation(true)
+      else setError(result.message)
+    } catch {
+      setError('Something went wrong. Please try again.')
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   if (awaitingConfirmation) {
