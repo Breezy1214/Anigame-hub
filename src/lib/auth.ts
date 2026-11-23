@@ -1,7 +1,8 @@
 import { isAuthRetryableFetchError, type AuthError } from '@supabase/supabase-js'
 import { supabase } from './supabase'
 
-export type AuthResult = { status: 'signed-in' } | { status: 'error'; message: string }
+type AuthFailure = { status: 'error'; message: string }
+export type AuthResult = { status: 'signed-in' } | AuthFailure
 export type SignUpResult = AuthResult | { status: 'confirm-email' }
 
 const EMAIL_TAKEN = 'An account with this email already exists.'
@@ -13,31 +14,44 @@ const MESSAGES: Partial<Record<string, string>> = {
   email_not_confirmed: 'Confirm your email address before logging in.',
 }
 
-function authError(error: AuthError): { status: 'error'; message: string } {
-  if (isAuthRetryableFetchError(error)) {
-    return { status: 'error', message: 'Could not reach the server. Please try again.' }
-  }
+const UNREACHABLE: AuthFailure = { status: 'error', message: 'Could not reach the server. Please try again.' }
+
+function authError(error: AuthError): AuthFailure {
+  if (isAuthRetryableFetchError(error)) return UNREACHABLE
   return { status: 'error', message: (error.code && MESSAGES[error.code]) || error.message }
 }
 
-export async function signUp(email: string, password: string): Promise<SignUpResult> {
-  const { data, error } = await supabase.auth.signUp({
-    email,
-    password,
-    options: { emailRedirectTo: window.location.origin },
-  })
-
-  if (error) return authError(error)
-  // With email confirmation on, Supabase returns an identity-less user instead of an error for taken emails.
-  if (data.user?.identities?.length === 0) {
-    return { status: 'error', message: EMAIL_TAKEN }
+/** Supabase returns auth errors but still throws on unexpected failures; callers only ever get a result. */
+async function settle<T>(attempt: () => Promise<T>): Promise<T | AuthFailure> {
+  try {
+    return await attempt()
+  } catch {
+    return UNREACHABLE
   }
-  return data.session ? { status: 'signed-in' } : { status: 'confirm-email' }
 }
 
-export async function signIn(email: string, password: string): Promise<AuthResult> {
-  const { error } = await supabase.auth.signInWithPassword({ email, password })
-  return error ? authError(error) : { status: 'signed-in' }
+export function signUp(email: string, password: string): Promise<SignUpResult> {
+  return settle(async () => {
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: { emailRedirectTo: window.location.origin },
+    })
+
+    if (error) return authError(error)
+    // With email confirmation on, Supabase returns an identity-less user instead of an error for taken emails.
+    if (data.user?.identities?.length === 0) {
+      return { status: 'error', message: EMAIL_TAKEN }
+    }
+    return data.session ? { status: 'signed-in' } : { status: 'confirm-email' }
+  })
+}
+
+export function signIn(email: string, password: string): Promise<AuthResult> {
+  return settle(async () => {
+    const { error } = await supabase.auth.signInWithPassword({ email, password })
+    return error ? authError(error) : { status: 'signed-in' }
+  })
 }
 
 export async function signOut() {
