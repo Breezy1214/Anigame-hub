@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 import { mockQuery } from '../test/mockQuery'
-import { deleteUserMedia, findUserMedia, saveMedia, updateUserMedia } from './userMedia'
+import { deleteUserMedia, findUserMedia, listUserMedia, saveMedia, updateUserMedia } from './userMedia'
 
 const { from } = vi.hoisted(() => ({ from: vi.fn() }))
 vi.mock('./supabase', () => ({ supabase: { from } }))
@@ -83,5 +83,15 @@ describe('deleteUserMedia', () => {
   it('throws database errors', async () => {
     from.mockReturnValue(mockQuery({ error: { message: 'denied' } }).builder)
     await expect(deleteUserMedia('row-1')).rejects.toEqual({ message: 'denied' })
+  })
+})
+
+describe('listUserMedia', () => {
+  it('lists the user’s titles, most recently updated first', async () => {
+    const query = mockQuery({ data: [row] })
+    from.mockReturnValue(query.builder)
+    expect(await listUserMedia('user-1', signal)).toEqual([row])
+    expect(query.calls).toContainEqual(['eq', ['user_id', 'user-1']])
+    expect(query.calls).toContainEqual(['order', ['updated_at', { ascending: false }]])
   })
 })

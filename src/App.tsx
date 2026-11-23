@@ -1,8 +1,10 @@
 import { BrowserRouter, Link, Route, Routes } from 'react-router-dom'
 import AuthProvider from './auth/AuthProvider'
+import RequireAuth from './auth/RequireAuth'
 import Layout from './components/Layout'
 import LoginPage from './pages/LoginPage'
 import MediaDetailsPage from './pages/MediaDetailsPage'
+import ProfilePage from './pages/ProfilePage'
 import RegisterPage from './pages/RegisterPage'
 import SearchPage from './pages/SearchPage'
 
@@ -27,6 +29,9 @@ export default function App() {
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/search" element={<SearchPage />} />
             <Route path="/media/:type/:id" element={<MediaDetailsPage />} />
+            <Route element={<RequireAuth />}>
+              <Route path="/profile" element={<ProfilePage />} />
+            </Route>
           </Route>
         </Routes>
       </BrowserRouter>

@@ -63,3 +63,16 @@ export async function deleteUserMedia(id: string) {
   const { error } = await supabase.from('user_media').delete().eq('id', id)
   if (error) throw error
 }
+
+/** Every title on a user's list, most recently updated first. */
+export async function listUserMedia(userId: string, signal: AbortSignal) {
+  const { data, error } = await supabase
+    .from('user_media')
+    .select()
+    .eq('user_id', userId)
+    .order('updated_at', { ascending: false })
+    .abortSignal(signal)
+    .returns<UserMedia[]>()
+  if (error) throw error
+  return data
+}

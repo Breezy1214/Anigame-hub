@@ -24,7 +24,9 @@ export default function Layout() {
           {!loading &&
             (user ? (
               <>
-                <span className="nav-user">{user.email}</span>
+                <Link to="/profile" className="nav-user">
+                  {user.email}
+                </Link>
                 <button type="button" onClick={handleSignOut}>
                   Log out
                 </button>
