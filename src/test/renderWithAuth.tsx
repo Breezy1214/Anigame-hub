@@ -6,17 +6,21 @@ import { AuthContext } from '../auth/AuthContext'
 import RequireAuth from '../auth/RequireAuth'
 
 /**
- * Renders `routes` inside a router starting at `url`, with `user` signed in (or signed out when null).
- * `routes` are <Route> elements.
+ * `routes` (<Route> elements) inside a router starting at `url`, with `user` signed in (or signed out when null).
+ * Pass the same tree to `rerender` with a different `user` to simulate signing in or out.
  */
-export function renderWithAuth(user: Partial<User> | null, url: string, routes: ReactNode) {
-  return render(
+export function withAuth(user: Partial<User> | null, url: string, routes: ReactNode) {
+  return (
     <AuthContext.Provider value={{ user: user as User | null, loading: false }}>
       <MemoryRouter initialEntries={[url]}>
         <Routes>{routes}</Routes>
       </MemoryRouter>
-    </AuthContext.Provider>,
+    </AuthContext.Provider>
   )
+}
+
+export function renderWithAuth(user: Partial<User> | null, url: string, routes: ReactNode) {
+  return render(withAuth(user, url, routes))
 }
 
 /** Renders `page` at `path` under RequireAuth, with a stub login page that shows "login page". */
