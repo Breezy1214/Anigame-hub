@@ -1,11 +1,6 @@
-import { describe, expect, it, vi } from 'vitest'
+import { describe, expect, it } from 'vitest'
+import { mockFetch } from '../test/mockFetch'
 import { searchAnime } from './animeApi'
-
-function mockFetch(status: number, body: unknown) {
-  const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify(body), { status }))
-  vi.stubGlobal('fetch', fetchMock)
-  return fetchMock
-}
 
 describe('searchAnime', () => {
   it('maps AniList results to media summaries', async () => {

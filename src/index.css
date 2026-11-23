@@ -88,7 +88,7 @@ a {
   text-decoration: none;
 }
 
-.site-header button {
+:is(.site-header, .tabs) button {
   font: inherit;
   background: none;
   border: 1px solid var(--border);
@@ -154,4 +154,21 @@ a {
   margin: 0;
   font-size: 0.85rem;
   opacity: 0.75;
+}
+
+.tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.tabs button {
+  padding: 6px 14px;
+  border-radius: 999px;
+}
+
+.tabs button[aria-pressed='true'] {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
 }
