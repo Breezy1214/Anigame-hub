@@ -34,6 +34,20 @@ describe('ShareProfileLink', () => {
     expect(share).toHaveBeenCalledWith({ title: '@spike on AniGame Hub', url })
   })
 
+  it('ignores a cancelled share but reports a failed one', async () => {
+    const share = vi.fn().mockRejectedValueOnce(new DOMException('cancelled', 'AbortError'))
+    vi.stubGlobal('navigator', { share })
+    render(<ShareProfileLink username="spike" />)
+    const user = userEvent.setup()
+
+    await user.click(screen.getByRole('button', { name: 'Share…' }))
+    expect(screen.queryByRole('status')).not.toBeInTheDocument()
+
+    share.mockRejectedValueOnce(new DOMException('blocked', 'NotAllowedError'))
+    await user.click(screen.getByRole('button', { name: 'Share…' }))
+    expect(await screen.findByRole('status')).toHaveTextContent('Copy the link instead')
+  })
+
   it('hides the share button without native sharing', () => {
     render(<ShareProfileLink username="spike" />)
     expect(screen.queryByRole('button', { name: 'Share…' })).not.toBeInTheDocument()

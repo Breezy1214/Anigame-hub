@@ -18,8 +18,11 @@ export default function ShareProfileLink({ username }: { username: string }) {
   async function handleShare() {
     try {
       await navigator.share({ title: `@${username} on AniGame Hub`, url })
-    } catch {
-      // Cancelling the share sheet rejects too; nothing to report.
+    } catch (error) {
+      // Closing the share sheet rejects with AbortError; only report real failures.
+      if (!(error instanceof DOMException && error.name === 'AbortError')) {
+        setStatus('Couldn’t open sharing. Copy the link instead.')
+      }
     }
   }
 
