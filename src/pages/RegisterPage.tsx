@@ -1,5 +1,7 @@
 import { useState, type FormEvent } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+import Field from '../components/Field'
+import FormError from '../components/FormError'
 import { signUp } from '../lib/auth'
 import { validateRegistration } from '../lib/validation'
 
@@ -19,16 +21,11 @@ export default function RegisterPage() {
     if (validationError) return
 
     setSubmitting(true)
-    try {
-      const result = await signUp(email, password)
-      if (result.status === 'signed-in') navigate('/', { replace: true })
-      else if (result.status === 'confirm-email') setAwaitingConfirmation(true)
-      else setError(result.message)
-    } catch {
-      setError('Something went wrong. Please try again.')
-    } finally {
-      setSubmitting(false)
-    }
+    const result = await signUp(email, password)
+    setSubmitting(false)
+    if (result.status === 'signed-in') navigate('/', { replace: true })
+    else if (result.status === 'confirm-email') setAwaitingConfirmation(true)
+    else setError(result.message)
   }
 
   if (awaitingConfirmation) {
@@ -46,29 +43,27 @@ export default function RegisterPage() {
     <main className="auth-page">
       <h1>Create your account</h1>
       <form className="auth-form" onSubmit={handleSubmit} noValidate>
-        <label htmlFor="email">Email</label>
-        <input
+        <Field
           id="email"
+          label="Email"
           type="email"
           autoComplete="email"
           required
           value={email}
           onChange={(e) => setEmail(e.target.value)}
         />
-
-        <label htmlFor="password">Password</label>
-        <input
+        <Field
           id="password"
+          label="Password"
           type="password"
           autoComplete="new-password"
           required
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         />
-
-        <label htmlFor="confirm-password">Confirm password</label>
-        <input
+        <Field
           id="confirm-password"
+          label="Confirm password"
           type="password"
           autoComplete="new-password"
           required
@@ -76,16 +71,15 @@ export default function RegisterPage() {
           onChange={(e) => setConfirmPassword(e.target.value)}
         />
 
-        {error && (
-          <p className="form-error" role="alert">
-            {error}
-          </p>
-        )}
+        <FormError message={error} />
 
         <button type="submit" disabled={submitting}>
           {submitting ? 'Creating account…' : 'Create account'}
         </button>
       </form>
+      <p>
+        Already have an account? <Link to="/login">Log in</Link>
+      </p>
     </main>
   )
 }
