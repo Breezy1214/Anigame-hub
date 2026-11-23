@@ -8,6 +8,8 @@ import {
   PROGRESS_LABELS,
   progressLimit,
   progressSuffix,
+  MAX_RATING,
+  RATINGS,
   statusLabel,
   TRACKING_STATUSES,
   type TrackingStatus,
@@ -122,6 +124,20 @@ function EntryControls({ entry, limit, onChange }: EntryControlsProps) {
         {TRACKING_STATUSES.map((status) => (
           <option key={status} value={status}>
             {statusLabel(status, entry.media_type)}
+          </option>
+        ))}
+      </select>
+      <label htmlFor="tracking-rating">Rating</label>
+      <select
+        id="tracking-rating"
+        value={shown.rating ?? ''}
+        disabled={pending}
+        onChange={(e) => update({ rating: e.target.value ? Number(e.target.value) : null })}
+      >
+        <option value="">Not rated</option>
+        {RATINGS.map((rating) => (
+          <option key={rating} value={rating}>
+            {rating} / {MAX_RATING}
           </option>
         ))}
       </select>
