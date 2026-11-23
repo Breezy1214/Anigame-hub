@@ -1,10 +1,8 @@
 import { screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { Route } from 'react-router-dom'
 import { describe, expect, it, vi } from 'vitest'
-import RequireAuth from '../auth/RequireAuth'
-import type { UserMedia } from '../lib/userMedia'
-import { renderWithAuth } from '../test/renderWithAuth'
+import { userMediaEntry as entry } from '../test/fixtures'
+import { renderProtectedRoute } from '../test/renderWithAuth'
 import ProfilePage from './ProfilePage'
 
 const { getProfile, saveProfile, listUserMedia } = vi.hoisted(() => ({
@@ -17,31 +15,8 @@ vi.mock('../lib/userMedia', () => ({ listUserMedia }))
 
 const profile = { id: 'user-1', username: 'spike', display_name: 'Spike Spiegel', bio: null }
 
-function entry(overrides: Partial<UserMedia>): UserMedia {
-  return {
-    id: 'row',
-    user_id: 'user-1',
-    external_media_id: '1',
-    media_type: 'anime',
-    title: 'Cowboy Bebop',
-    cover_url: null,
-    status: 'planned',
-    rating: null,
-    progress: 0,
-    favorite: false,
-    created_at: '',
-    updated_at: '',
-    ...overrides,
-  }
-}
-
 function renderPage(user: { id: string } | null = { id: 'user-1' }) {
-  renderWithAuth(user, '/profile', [
-    <Route key="auth" element={<RequireAuth />}>
-      <Route path="/profile" element={<ProfilePage />} />
-    </Route>,
-    <Route key="login" path="/login" element={<p>login page</p>} />,
-  ])
+  renderProtectedRoute(user, '/profile', <ProfilePage />)
 }
 
 describe('ProfilePage', () => {
