@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import RegisterPage from './RegisterPage'
 
 const { signUp } = vi.hoisted(() => ({ signUp: vi.fn() }))
@@ -27,8 +27,6 @@ async function fillAndSubmit(email: string, password: string, confirm = password
 }
 
 describe('RegisterPage', () => {
-  beforeEach(() => signUp.mockReset())
-
   it('does not sign up when validation fails', async () => {
     renderPage()
     await fillAndSubmit('a@b.co', 'password1', 'different1')

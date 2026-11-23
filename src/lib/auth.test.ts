@@ -1,5 +1,5 @@
 import { AuthApiError, AuthRetryableFetchError } from '@supabase/supabase-js'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { signIn, signUp } from './auth'
 
 const { supabaseSignUp, signInWithPassword } = vi.hoisted(() => ({
@@ -11,8 +11,6 @@ vi.mock('./supabase', () => ({ supabase: { auth: { signUp: supabaseSignUp, signI
 const user = { identities: [{}] }
 
 describe('signUp', () => {
-  beforeEach(() => supabaseSignUp.mockReset())
-
   it('is signed in when Supabase returns a session', async () => {
     supabaseSignUp.mockResolvedValue({ data: { user, session: {} }, error: null })
     expect(await signUp('a@b.co', 'password1')).toEqual({ status: 'signed-in' })
@@ -52,8 +50,6 @@ describe('signUp', () => {
 })
 
 describe('signIn', () => {
-  beforeEach(() => signInWithPassword.mockReset())
-
   it('signs in with valid credentials', async () => {
     signInWithPassword.mockResolvedValue({ data: { session: {} }, error: null })
     expect(await signIn('a@b.co', 'password1')).toEqual({ status: 'signed-in' })
