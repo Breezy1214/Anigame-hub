@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { MemoryRouter } from 'react-router-dom'
+import { Link, MemoryRouter } from 'react-router-dom'
 import { describe, expect, it, vi } from 'vitest'
 import SearchPage from './SearchPage'
 
@@ -12,6 +12,7 @@ const frieren = { id: '1', type: 'anime', title: 'Frieren', coverUrl: null, rele
 function renderPage(url = '/search') {
   render(
     <MemoryRouter initialEntries={[url]}>
+      <Link to="/search?q=bebop">Bebop</Link>
       <SearchPage />
     </MemoryRouter>,
   )
@@ -31,6 +32,13 @@ describe('SearchPage', () => {
     renderPage('/search?q=nothing')
     expect(screen.getByLabelText('Anime title')).toHaveValue('nothing')
     expect(await screen.findByText('No results for “nothing”.')).toBeInTheDocument()
+  })
+
+  it('updates the search box when the URL query changes', async () => {
+    searchAnime.mockResolvedValue([])
+    renderPage('/search?q=frieren')
+    await userEvent.click(screen.getByRole('link', { name: 'Bebop' }))
+    expect(screen.getByLabelText('Anime title')).toHaveValue('bebop')
   })
 
   it('shows an error when the API fails', async () => {
