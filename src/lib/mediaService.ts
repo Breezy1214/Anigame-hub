@@ -12,8 +12,9 @@ const CACHE_LIMIT = 100
 const cache = new Map<string, unknown>()
 
 async function cached<T>(key: string, load: () => Promise<T>): Promise<T> {
-  if (cache.has(key)) return cache.get(key) as T
-  const value = await load()
+  // Re-inserting on every hit keeps Map order least-recently-used first, so eviction drops the stalest entry.
+  const value = cache.has(key) ? (cache.get(key) as T) : await load()
+  cache.delete(key)
   cache.set(key, value)
   if (cache.size > CACHE_LIMIT) cache.delete(cache.keys().next().value!)
   return value
