@@ -38,19 +38,14 @@ body {
 }
 
 :is(.auth-form, .search-form) :is(input, button),
-.primary-button,
-.entry-controls select {
+.primary-button {
   font: inherit;
   padding: 10px 12px;
   border-radius: 6px;
 }
 
-:is(.auth-form, .search-form) input,
-.entry-controls select {
-  border: 1px solid var(--border);
-}
-
 :is(.auth-form, .search-form) input {
+  border: 1px solid var(--border);
   margin-bottom: 8px;
 }
 
@@ -247,12 +242,25 @@ a {
   gap: 8px 12px;
 }
 
-.entry-controls select {
+.entry-controls :is(select, input) {
+  font: inherit;
   padding: 6px 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
   background: var(--bg);
   color: inherit;
 }
 
 .entry-controls .form-error {
   flex-basis: 100%;
+}
+
+.progress-field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.progress-field input {
+  width: 5em;
 }

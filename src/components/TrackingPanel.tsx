@@ -2,9 +2,18 @@ import { useOptimistic, useState, useTransition } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { loginState } from '../auth/loginState'
 import type { AsyncState } from '../hooks/useAsync'
-import type { MediaSummary } from '../lib/media'
-import { statusLabel, TRACKING_STATUSES, type TrackingStatus } from '../lib/tracking'
+import type { MediaDetails, MediaSummary } from '../lib/media'
+import {
+  clampProgress,
+  PROGRESS_LABELS,
+  progressLimit,
+  progressSuffix,
+  statusLabel,
+  TRACKING_STATUSES,
+  type TrackingStatus,
+} from '../lib/tracking'
 import { saveMedia, updateUserMedia, type TrackingUpdate, type UserMedia } from '../lib/userMedia'
+import Field from './Field'
 import FormError from './FormError'
 
 export type SavedEntry = AsyncState<UserMedia | null> | { status: 'signed-out' }
@@ -48,7 +57,48 @@ function SaveButton({ media, onSaved }: { media: MediaSummary; onSaved: (entry: 
   )
 }
 
-function EntryControls({ entry, onChange }: { entry: UserMedia; onChange: (entry: UserMedia) => void }) {
+type ProgressFieldProps = {
+  value: number
+  label: string
+  suffix: string | null
+  limit: number | null
+  disabled: boolean
+  onCommit: (progress: number) => void
+}
+
+/** Commits on Enter or blur, so typing a multi-digit number makes one update. */
+function ProgressField({ value, label, suffix, limit, disabled, onCommit }: ProgressFieldProps) {
+  const [draft, setDraft] = useState(String(value))
+
+  function commit() {
+    const next = clampProgress(draft, limit)
+    setDraft(String(next))
+    if (next !== value) onCommit(next)
+  }
+
+  return (
+    <div className="progress-field">
+      <Field
+        id="tracking-progress"
+        label={label}
+        type="number"
+        inputMode="numeric"
+        min={0}
+        max={limit ?? undefined}
+        value={draft}
+        disabled={disabled}
+        onChange={(e) => setDraft(e.target.value)}
+        onBlur={commit}
+        onKeyDown={(e) => e.key === 'Enter' && commit()}
+      />
+      {suffix && <span>{suffix}</span>}
+    </div>
+  )
+}
+
+type EntryControlsProps = { entry: UserMedia; limit: number | null; onChange: (entry: UserMedia) => void }
+
+function EntryControls({ entry, limit, onChange }: EntryControlsProps) {
   const { pending, error, run } = useListAction('Couldn’t update your list. Please try again.')
   // Show the change straight away; it reverts on its own if the update fails.
   const [shown, setShown] = useOptimistic(entry)
@@ -75,13 +125,23 @@ function EntryControls({ entry, onChange }: { entry: UserMedia; onChange: (entry
           </option>
         ))}
       </select>
+      <ProgressField
+        // Remount when the shown value changes (saved or rolled back) so the draft follows it.
+        key={shown.progress}
+        value={shown.progress}
+        label={PROGRESS_LABELS[entry.media_type]}
+        suffix={progressSuffix(entry.media_type, limit)}
+        limit={limit}
+        disabled={pending}
+        onCommit={(progress) => update({ progress })}
+      />
       <FormError message={error} />
     </div>
   )
 }
 
 /** The signed-in user's tracking controls for one title. `saved` is loaded by the page alongside the details. */
-export default function TrackingPanel({ media, saved }: { media: MediaSummary; saved: SavedEntry }) {
+export default function TrackingPanel({ media, saved }: { media: MediaDetails; saved: SavedEntry }) {
   const location = useLocation()
   const [changed, setChanged] = useState<UserMedia | null>(null)
   const entry = changed ?? (saved.status === 'success' ? saved.data : null)
@@ -99,7 +159,7 @@ export default function TrackingPanel({ media, saved }: { media: MediaSummary; s
   } else if (saved.status === 'error') {
     content = <FormError message="Couldn’t load your list. Please try again later." />
   } else if (entry) {
-    content = <EntryControls entry={entry} onChange={setChanged} />
+    content = <EntryControls entry={entry} limit={progressLimit(media)} onChange={setChanged} />
   } else if (saved.status === 'success') {
     content = <SaveButton media={media} onSaved={setChanged} />
   }
