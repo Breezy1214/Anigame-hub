@@ -50,6 +50,14 @@ describe('signUp', () => {
 })
 
 describe('signIn', () => {
+  it('reports unexpected failures instead of throwing', async () => {
+    signInWithPassword.mockRejectedValue(new TypeError('boom'))
+    expect(await signIn('a@b.co', 'password1')).toEqual({
+      status: 'error',
+      message: 'Could not reach the server. Please try again.',
+    })
+  })
+
   it('signs in with valid credentials', async () => {
     signInWithPassword.mockResolvedValue({ data: { session: {} }, error: null })
     expect(await signIn('a@b.co', 'password1')).toEqual({ status: 'signed-in' })
