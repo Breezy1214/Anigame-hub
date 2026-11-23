@@ -40,7 +40,7 @@ export default function SearchPage() {
         setResult({ key, results: null })
       })
     return () => controller.abort()
-  }, [type, query])
+  }, [key, type, query])
 
   function search(nextType: MediaType, q: string) {
     setSearchParams(q ? { type: nextType, q } : { type: nextType })

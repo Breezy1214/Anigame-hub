@@ -35,7 +35,7 @@ describe('SearchPage', () => {
   })
 
   it('updates the search box when the URL query changes', async () => {
-    searchAnime.mockResolvedValue([])
+    searchMedia.mockResolvedValue([])
     renderPage('/search?q=frieren')
     await userEvent.click(screen.getByRole('link', { name: 'Bebop' }))
     expect(screen.getByLabelText('Anime title')).toHaveValue('bebop')
