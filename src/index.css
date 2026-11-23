@@ -1,0 +1,70 @@
+:root {
+  --text: #1f1d24;
+  --bg: #fff;
+  --border: #d9d7dd;
+  --accent: #7c2fd0;
+  --error: #b42318;
+
+  font: 16px/1.5 system-ui, 'Segoe UI', Roboto, sans-serif;
+  color-scheme: light dark;
+  color: var(--text);
+  background: var(--bg);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --text: #f3f4f6;
+    --bg: #16171d;
+    --border: #3a3c47;
+    --accent: #c084fc;
+    --error: #f97066;
+  }
+}
+
+body {
+  margin: 0;
+}
+
+.auth-page {
+  max-width: 400px;
+  margin: 0 auto;
+  padding: 48px 16px;
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.auth-form :is(input, button) {
+  font: inherit;
+  padding: 10px 12px;
+  border-radius: 6px;
+}
+
+.auth-form input {
+  border: 1px solid var(--border);
+  margin-bottom: 8px;
+}
+
+.auth-form button {
+  border: none;
+  background: var(--accent);
+  color: #fff;
+  cursor: pointer;
+}
+
+.auth-form button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.form-error {
+  color: var(--error);
+  margin: 0;
+}
+
+a {
+  color: var(--accent);
+}
