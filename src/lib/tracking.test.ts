@@ -22,6 +22,7 @@ describe('progress', () => {
     expect(clampProgress('3.7', 26)).toBe(3)
     expect(clampProgress('', 26)).toBe(0)
     expect(clampProgress('1100', null)).toBe(1100)
+    expect(clampProgress('1e400', null)).toBe(2_147_483_647)
   })
 })
 
