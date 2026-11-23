@@ -24,3 +24,7 @@ Locked from [Requirements.md](Requirements.md):
 4. `npm run dev`
 
 Other scripts: `npm test`, `npm run lint`, `npm run build`.
+
+## Deploying
+
+The app is a single-page app with client-side routes (for example the shareable `/u/:username` profile links), so the host must serve `index.html` for every path that isn't a built file. Configure that rewrite on your static host, then deploy the output of `npm run build` (`dist/`).

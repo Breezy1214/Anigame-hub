@@ -247,14 +247,16 @@ a {
 }
 
 .entry-controls,
-.confirm-remove {
+.confirm-remove,
+.share-link-row {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 8px 12px;
 }
 
-.entry-controls :is(select, input) {
+.entry-controls :is(select, input),
+.share-link-row input {
   font: inherit;
   padding: 6px 8px;
   border: 1px solid var(--border);
@@ -383,4 +385,17 @@ a {
 
 .profile-bio {
   white-space: pre-line;
+}
+
+.share-link {
+  margin: 16px 0;
+}
+
+.share-link-row {
+  margin-top: 4px;
+}
+
+.share-link-row input {
+  flex: 1 1 200px;
+  min-width: 0;
 }
