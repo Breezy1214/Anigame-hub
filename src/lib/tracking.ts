@@ -28,7 +28,10 @@ export function progressLimit(media: MediaDetails) {
   return media.type === 'anime' ? media.episodeCount : 100
 }
 
+// `progress` is a Postgres integer, so an unknown limit still caps there.
+const INTEGER_MAX = 2_147_483_647
+
 /** Parses typed progress into a whole number within the title's limit. */
 export function clampProgress(input: string, limit: number | null) {
-  return Math.min(Math.max(0, Math.floor(Number(input)) || 0), limit ?? Infinity)
+  return Math.min(Math.max(0, Math.floor(Number(input)) || 0), limit ?? INTEGER_MAX)
 }
